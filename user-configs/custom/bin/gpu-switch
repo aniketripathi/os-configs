@@ -1,0 +1,49 @@
+#!/bin/bash
+# gpu-switch — Toggle default GPU between AMD (iGPU) and NVIDIA (dGPU)
+# Sets default GPU environment variables for the systemd user session.
+
+set -euo pipefail
+
+CONF_FILE="$HOME/.config/environment.d/10-default-gpu.conf"
+
+mkdir -p "$(dirname "$CONF_FILE")"
+
+function show_status() {
+    if [[ -f "$CONF_FILE" ]] && grep -q "^__NV_PRIME_RENDER_OFFLOAD=1" "$CONF_FILE"; then
+        echo "Default GPU: NVIDIA (dGPU)"
+    else
+        echo "Default GPU: AMD (iGPU)"
+    fi
+}
+
+case "${1:-status}" in
+    amd)
+        echo "Configuring default GPU: AMD (iGPU)..."
+        cat << 'EOF' > "$CONF_FILE"
+# Default GPU: AMD (iGPU)
+# NVIDIA prime offload is disabled globally (opt-in per-app).
+#
+# To offload specific applications to NVIDIA dGPU, run them with:
+# __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia <command>
+EOF
+        echo "Successfully set default GPU to AMD. Changes will take effect on next login."
+        ;;
+    nvidia)
+        echo "Configuring default GPU: NVIDIA (dGPU)..."
+        cat << 'EOF' > "$CONF_FILE"
+# Default GPU: NVIDIA (dGPU)
+# NVIDIA prime offload is enabled globally for all applications.
+__NV_PRIME_RENDER_OFFLOAD=1
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+__VK_LAYER_NV_optimus=NVIDIA_only
+EOF
+        echo "Successfully set default GPU to NVIDIA. Changes will take effect on next login."
+        ;;
+    status)
+        show_status
+        ;;
+    *)
+        echo "Usage: gpu-switch [amd|nvidia|status]"
+        exit 1
+        ;;
+esac

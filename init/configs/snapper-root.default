@@ -1,0 +1,28 @@
+# Snapper Root Configuration Template
+# Target subvolume to snapshot (root partition)
+SUBVOLUME="/"
+FSTYPE="btrfs"
+
+# Permissions (restrict to root user)
+ALLOW_GROUPS=""
+ALLOW_USERS=""
+
+# Enable periodic timeline snapshots and cleanup runs
+TIMELINE_CREATE="yes"
+TIMELINE_CLEANUP="yes"
+
+# Retain 2 weekly, 1 monthly, and 1 yearly snapshots. hourly/daily are disabled (0)
+TIMELINE_LIMIT_HOURLY="0"
+TIMELINE_LIMIT_DAILY="0"
+TIMELINE_LIMIT_WEEKLY="2"
+TIMELINE_LIMIT_MONTHLY="1"
+TIMELINE_LIMIT_YEARLY="1"
+
+# Enable snapshot limit cleanup based on number of snapshots
+NUMBER_CLEANUP="yes"
+NUMBER_LIMIT="5"
+NUMBER_MIN_AGE="1800"
+
+# Automatically delete empty pre/post comparison snapshots
+EMPTY_PRE_POST_CLEANUP="yes"
+EMPTY_PRE_POST_MIN_AGE="1800"

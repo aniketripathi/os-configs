@@ -1,10 +1,2 @@
 # Keys and Secrets
 keys/
-
-# GPG passphrase file
-.os-configs-backup-passphrase
-
-# Stow files
-*.orig
-*.bak
-

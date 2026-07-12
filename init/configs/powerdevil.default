@@ -1,0 +1,27 @@
+# powerdevil.default — KDE Power Management Configuration Template
+
+[AC][Display]
+# Enable display dimming on AC power after 10 minutes (600 seconds)
+DimDisplayWhenIdle=true
+DimDisplayWhenIdleTimeoutSec=600
+# Turn off screen completely on AC power after 15 minutes (900 seconds)
+TurnOffDisplayWhenIdle=true
+TurnOffDisplayWhenIdleTimeoutSec=900
+
+[AC][SuspendAndShutdown]
+# Auto-suspend action: 0 = Do nothing (Disabled on AC power)
+AutoSuspendAction=0
+
+[Battery][Display]
+# Enable display dimming on Battery power after 5 minutes (300 seconds)
+DimDisplayWhenIdle=true
+DimDisplayWhenIdleTimeoutSec=300
+# Turn off screen completely on Battery power after 10 minutes (600 seconds)
+TurnOffDisplayWhenIdle=true
+TurnOffDisplayWhenIdleTimeoutSec=600
+
+[Battery][SuspendAndShutdown]
+# Auto-suspend action: 1 = Suspend (Sleep)
+AutoSuspendAction=1
+# Suspend system on Battery power after 20 minutes (1200 seconds) of inactivity
+AutoSuspendTimeoutSec=1200

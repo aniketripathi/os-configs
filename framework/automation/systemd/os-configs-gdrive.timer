@@ -1,0 +1,10 @@
+[Unit]
+Description=Run os-configs gdrive backup weekly
+
+[Timer]
+OnCalendar=weekly
+Persistent=true
+RandomizedDelaySec=900
+
+[Install]
+WantedBy=timers.target
