@@ -25,12 +25,9 @@ fi
 echo "Reloading systemd user manager configuration..."
 systemctl --user daemon-reload
 
-# 4. Enable and start weekly sync timer
-echo "Enabling and starting os-configs-sync.timer..."
-systemctl --user enable --now os-configs-sync.timer
-
-echo "Note: os-configs-gdrive.timer is NOT enabled by default."
-echo "If you wish to enable weekly compressed Google Drive backups, run:"
-echo "  systemctl --user enable --now os-configs-gdrive.timer"
+# 4. Timers information (not enabled by default)
+echo "Note: os-configs-sync.timer is NOT enabled by default."
+echo "If you wish to enable weekly configuration sync, run:"
+echo "  systemctl --user enable --now os-configs-sync.timer"
 
 echo "Systemd user services configuration complete."

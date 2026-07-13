@@ -100,6 +100,9 @@ else
 fi
 
 # Configure custom profile loading
+# WARNING: Sourced by graphical login shells (non-interactive). 
+# ONLY place non-blocking, error-handling configurations here.
+# Any interactive prompts or blocking processes (like keychain) will freeze the boot/login sequence.
 echo "Configuring custom profile loading..."
 CUSTOM_PROFILE="$CUSTOM_CONFIGS/.profile"
 SOURCE_CMD="[ -f \"$CUSTOM_PROFILE\" ] && . \"$CUSTOM_PROFILE\""

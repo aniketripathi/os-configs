@@ -1,2 +1,5 @@
 # Keys and Secrets
 keys/
+
+# IDE 
+.vscode/

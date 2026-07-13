@@ -1,17 +1,17 @@
 #!/bin/bash
 # Sync live configuration files back to the os-configs repository
-# Reads backup-list.conf and copies system configurations back into user-configs/
+# Reads restore.conf and copies system configurations back into user-configs/
 
 set -euo pipefail
 IFS=$'\n\t'
 
 source "/mnt/core/os-configs/framework/configs/reinstall.env"
-BACKUP_LIST="$CONFIGS_DIR/backup-list.conf"
+RESTORE_CONF="$CONFIGS_DIR/restore.conf"
 
 echo "Starting configuration backup to $USER_CONFIGS..."
 
-if [[ ! -f "$BACKUP_LIST" ]]; then
-    echo "Error: $BACKUP_LIST not found."
+if [[ ! -f "$RESTORE_CONF" ]]; then
+    echo "Error: $RESTORE_CONF not found."
     exit 1
 fi
 
@@ -52,7 +52,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     else
         echo "Warning: path does not exist, skipping: $live_path"
     fi
-done < "$BACKUP_LIST"
+done < "$RESTORE_CONF"
 
 # Manually backup rclone.conf to keys/ (gitignored) to prevent exposing credentials
 if [[ -f "${HOME}/.config/rclone/rclone.conf" ]]; then

@@ -9,10 +9,35 @@ source "/mnt/core/os-configs/framework/configs/reinstall.env"
 echo "=== Phase 3: Snapper and BTRFS Setup ==="
 
 # 1. Initialize Snapper config for root if not already done
-if [[ ! -f /etc/snapper/configs/root ]]; then
-    echo "Creating snapper root config for /..."
+# If the config file was already restored by phase 1, we temporarily move it out of the way
+# to allow snapper to run its official init (which registers the config in sysconfig and sets up permissions)
+if [[ ! -f /etc/sysconfig/snapper ]] || ! grep -q "^SNAPPER_CONFIGS=.*root" /etc/sysconfig/snapper 2>/dev/null; then
+    echo "Initializing snapper root configuration..."
+    
+    # Back up the restored config if it exists
+    if [[ -f /etc/snapper/configs/root ]]; then
+        sudo mv /etc/snapper/configs/root /etc/snapper/configs/root.bak
+    fi
+    
+    # Run the official snapper initialization
     sudo snapper -c root create-config /
+    
+    # Restore the custom configuration settings over the default one
+    if [[ -f /etc/snapper/configs/root.bak ]]; then
+        sudo mv /etc/snapper/configs/root.bak /etc/snapper/configs/root
+    fi
 fi
+
+# Ensure /.snapshots is a proper Btrfs subvolume (necessary for snapper rollback to work)
+if [[ -d /.snapshots ]] && [[ "$(stat -c %i /.snapshots 2>/dev/null)" -ne 256 ]]; then
+    echo "Converting /.snapshots plain directory into a Btrfs subvolume..."
+    sudo rmdir /.snapshots 2>/dev/null || sudo rm -rf /.snapshots
+    sudo btrfs subvolume create /.snapshots
+elif [[ ! -e /.snapshots ]]; then
+    echo "Creating /.snapshots Btrfs subvolume..."
+    sudo btrfs subvolume create /.snapshots
+fi
+
 
 # 2. Overwrite default config with snapper-root settings
 if [[ -f "$SYSTEM_CONFIGS/snapper/configs/root" ]]; then

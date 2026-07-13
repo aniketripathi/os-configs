@@ -56,8 +56,8 @@ if ! grep -q "[[:space:]]${GDRIVE_DIR}[[:space:]]" /etc/fstab; then
     echo "fstab entry appended successfully."
 else
     echo "Google Drive mount entry already exists in /etc/fstab. Updating config path if necessary..."
-    # Update config path in place if it exists to match the current user home directory
-    sudo sed -i "s|config=.*$GDRIVE_DIR|config=${RCLONE_CONF}|" /etc/fstab || true
+    # Target the line containing GDRIVE_DIR and replace the config path in-place
+    sudo sed -i "\|[[:space:]]${GDRIVE_DIR}[[:space:]]|s|config=[^,[:space:]]*|config=${RCLONE_CONF}|" /etc/fstab || true
 fi
 
 echo "Google Drive rclone fstab setup complete."

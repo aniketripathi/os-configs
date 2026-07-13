@@ -4,10 +4,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-if [[ $EUID -ne 0 ]]; then
-   echo "Error: This script must be run with sudo or as root."
-   exit 1
-fi
+
 
 source "/mnt/core/os-configs/framework/configs/reinstall.env"
 
@@ -57,7 +54,7 @@ fi
 # Ensure Flatpak is configured with Flathub
 if command -v flatpak >/dev/null 2>&1; then
     echo "Configuring Flathub remote for Flatpak..."
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 else
     echo "Warning: flatpak command not found. Skipping flatpak setup."
 fi
@@ -103,7 +100,7 @@ function install_dnf_section() {
             echo "Installing: $pkg..."
         fi
 
-        dnf install -y "$pkg"
+        sudo dnf install -y "$pkg"
     done <<< "$packages_data"
 }
 
@@ -152,15 +149,15 @@ function install_flatpak_section() {
         
         # Apply Flatpak normal app behavior override for each app specifically
         echo "Applying overrides to $pkg to behave like a normal app..."
-        flatpak override --filesystem=host --device=all --socket=session-bus --socket=system-bus "$pkg"
+        flatpak override --filesystem=host --socket=session-bus "$pkg"
     done <<< "$packages_data"
 }
 
 # Add Microsoft VS Code repository if development packages are selected
 if $INSTALL_DEV; then
     echo "Setting up Microsoft VS Code repository..."
-    rpm --import https://packages.microsoft.com/keys/microsoft.asc
-    sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+    sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
 fi
 
 # Run DNF and Flatpak installations based on active flags
@@ -181,7 +178,7 @@ fi
 # Apply global system Flatpak permissions overrides
 if command -v flatpak >/dev/null 2>&1; then
     echo "Applying global filesystem & device permissions to all system Flatpaks..."
-    flatpak override --filesystem=host --device=all --socket=session-bus --socket=system-bus
+    flatpak override --filesystem=host --socket=session-bus
 fi
 
 echo "Package installation and flatpak overriding complete."

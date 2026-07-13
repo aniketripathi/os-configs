@@ -1,6 +1,9 @@
 # Fedora Reinstall Framework & OS Configurations
 
-Establish a self-contained, automated reinstall framework inside the `os-configs` repository. Following a fresh install of Fedora Workstation (KDE Plasma spin), use this guide to restore system configurations, services, user profiles, power settings, and automated backup timers in at most **2 reboots**.
+
+## About
+
+Establish a self-contained, automated reinstall framework inside the `os-configs` repository. Following a fresh install of Fedora Workstation (KDE Plasma), use this guide to restore system configurations, services, user profiles, power settings, and automated backup timers.
 
 ---
 
@@ -141,7 +144,7 @@ sudo mount -a && sudo chown -R $USER:$USER /mnt/{core,library,temp}
 #### 2. Install Bootstrap Prerequisites
 Install the bare minimum tools needed to authenticate, configure snapper, and clone files:
 ```shell
-sudo dnf install -y git gh keychain p7zip p7zip-plugins rclone snapper
+sudo dnf install -y git gh p7zip p7zip-plugins rclone snapper
 ```
 
 #### 3. SSH Setup
@@ -164,11 +167,12 @@ Configure SSH client settings to use the key:
 echo -e "Host github.com\n    IdentityFile ~/.ssh/id_ed25519\n    AddKeysToAgent yes" > ~/.ssh/config
 ```
 
-#### 4. Start Keychain (SSH Agent)
-Load the SSH key into active terminal memory to authorize git:
+#### 4. Verify the Native SSH Agent Session
+Fedora KDE automatically initializes an `ssh-agent` and exports its socket on login. To verify it is running in your active terminal session:
 ```shell
-eval $(keychain --eval --quiet id_ed25519)
+echo $SSH_AUTH_SOCK
 ```
+*Because you configured `AddKeysToAgent yes` in step 3, your private key will be loaded into this agent automatically the very first time you type your passphrase during a git or ssh command.*
 
 #### 5. Authenticate GitHub CLI & Clone Repository
 Add your SSH key to GitHub and clone the repository:
@@ -236,12 +240,20 @@ bash framework/scripts/00-dnf-post-install.sh
     ```shell
     sudo dnf install akmod-nvidia
     ```
-*   **`[CAUTION]` Secure Boot driver signing:** If enabled, sign akmod drivers before rebooting:
+*   **`[CRITICAL]` Secure Boot driver signing:** If Secure Boot is enabled in your BIOS, you **must** enroll your signature key to allow the NVIDIA driver to load:
     ```shell
     sudo kmodgenca -a                                              # Generate signature key
     sudo mokutil --import /etc/pki/akmods/certs/public_key.der     # Register MOK key
-    # Define a password when prompted, then enter it on the BIOS MOK Screen upon reboot
+    # Enter a temporary password when prompted
     ```
+
+> [!CAUTION]
+> **DO NOT SKIP THE BLUE MOK SCREEN ON REBOOT!**
+> 1. When the laptop restarts, it will show a blue screen titled **"Shim UEFI key management"** or **"MOK Manager"**.
+> 2. You **must** select **"Enroll MOK"** -> **"Continue"** -> **"Yes"** -> enter the temporary password you defined above.
+> 3. Select **"Reboot"** to finish.
+> 
+> *If you skip this blue screen or hit any key to continue default boot, the kernel will refuse to load the unsigned NVIDIA driver on boot, locking you at a black boot-loop screen.*
 
 **═══ PERFORM REBOOT 1 (Enrolls Secure Boot Keys & Loads GPU Kernel Modules) ═══**
 
@@ -264,8 +276,8 @@ Generates root snapshot rules, optimizes timeline retention limits, and configur
 bash framework/scripts/02-snapper-btrfs-fedora.sh
 ```
 
-#### 10. Deploy Desktop Settings and GPU Switcher
-Deploys custom KDE Powerdevil configurations for screen dimming and auto-suspend timeouts on AC vs. Battery, installs `gpu-switch` to `~/.local/bin/`, and sets the default graphics card to AMD iGPU:
+#### 10. Deploy Desktop Settings
+Deploys custom KDE Powerdevil configurations for screen dimming and auto-suspend timeouts on AC vs. Battery:
 ```shell
 bash framework/scripts/05-kde-setup-power-profiles.sh
 ```
@@ -279,12 +291,6 @@ bash framework/scripts/05-kde-setup-power-profiles.sh
     *   Turn off display when idle: **10 minutes** (`TurnOffDisplayWhenIdleTimeoutSec=600`)
     *   Auto-suspend: **20 minutes** (`AutoSuspendTimeoutSec=1200`, `AutoSuspendAction=1`)
 
-To switch graphic offloads (changes take effect on next login):
-```shell
-gpu-switch status # Display active GPU profile
-gpu-switch nvidia # Switch system environment default to Nvidia GPU
-gpu-switch amd    # Switch system environment default to AMD iGPU
-```
 
 #### 11. `[CAUTION]` Configure Google Drive Mount (Rclone)
 Configure rclone Google Drive credentials and mount parameters:

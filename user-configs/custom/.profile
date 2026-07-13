@@ -1,10 +1,14 @@
 #!/bin/sh
 # Custom profile — sourced by .bashrc/.zshrc/.profile
+# WARNING: Sourced by graphical login shells (non-interactive).
+# ONLY place non-blocking, error-handling configurations here.
+# Any interactive prompts or blocking processes will freeze the boot/login sequence.
 
-# SSH agent via keychain
-if command -v keychain >/dev/null 2>&1; then
-    eval $(keychain --eval --quiet id_ed25519)
+# Prevent double loading of custom profile
+if [ "${CUSTOM_PROFILE_INITIALIZED:-0}" -eq 1 ]; then
+    return 0
 fi
+export CUSTOM_PROFILE_INITIALIZED=1
 
 # Load custom bin directory containing utility scripts (e.g. gpu-switch)
 export PATH="/mnt/core/os-configs/user-configs/custom/bin:$PATH"

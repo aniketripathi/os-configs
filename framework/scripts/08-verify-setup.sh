@@ -102,11 +102,11 @@ else
     report_missing "SSH key pair (id_ed25519) is missing from ~/.ssh/."
 fi
 
-# Check if keychain has set up ssh-agent and created the session files
-if pgrep -u "$USER" ssh-agent >/dev/null && ls "$HOME/.keychain/"*"-sh" &>/dev/null; then
-    report_ok "Keychain SSH agent is running and active."
+# Check if SSH Agent is active in the session
+if pgrep -u "$USER" ssh-agent >/dev/null && [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
+    report_ok "System SSH agent is running and active (SSH_AUTH_SOCK is set)."
 else
-    report_missing "Keychain SSH agent is NOT running."
+    report_missing "System SSH agent is NOT active or SSH_AUTH_SOCK is not set."
 fi
 echo ""
 
@@ -270,39 +270,14 @@ else
 fi
 echo ""
 
-# ----------------- 10. GPU SWITCH -----------------
-echo "[10] Default GPU Configuration"
-gpu_env_file="$HOME/.config/environment.d/10-default-gpu.conf"
-if [[ -f "$gpu_env_file" ]]; then
-    report_ok "GPU environment config exists at ~/.config/environment.d/10-default-gpu.conf."
-    if command -v gpu-switch >/dev/null 2>&1; then
-        report_ok "gpu-switch utility is present on the PATH."
-        if active_gpu=$(gpu-switch status 2>/dev/null); then
-            report_ok "Active GPU config: $active_gpu"
-        else
-            report_missing "gpu-switch status query failed."
-        fi
-    elif [[ -x "$HOME/.local/bin/gpu-switch" ]]; then
-        report_ok "gpu-switch utility is present at ~/.local/bin/gpu-switch."
-        if active_gpu=$( "$HOME/.local/bin/gpu-switch" status 2>/dev/null ); then
-            report_ok "Active GPU config: $active_gpu"
-        else
-            report_missing "gpu-switch status query failed."
-        fi
-    else
-        report_missing "gpu-switch utility is NOT on the PATH or ~/.local/bin/."
-    fi
-else
-    report_missing "GPU environment configuration file is missing."
-fi
-echo ""
+
 
 # ----------------- 11. TIMERS -----------------
 echo "[11] Automation Service Timers"
 if systemctl --user is-enabled os-configs-sync.timer &>/dev/null; then
     report_ok "os-configs-sync.timer is enabled."
 else
-    report_missing "os-configs-sync.timer is disabled."
+    report_skip "os-configs-sync.timer is disabled (optional)."
 fi
 
 if systemctl --user is-enabled os-configs-gdrive.timer &>/dev/null; then
@@ -325,6 +300,9 @@ if [[ -f "/etc/fstab" ]]; then
     
     if ! grep -q "rclone" /etc/fstab; then
         echo "    (fstab: missing rclone gdrive mount)"
+        fstab_missing=$((fstab_missing + 1))
+    elif ! grep -E "rclone.*nofail" /etc/fstab >/dev/null; then
+        echo "    (fstab: rclone gdrive mount exists but is missing the 'nofail' option)"
         fstab_missing=$((fstab_missing + 1))
     fi
 

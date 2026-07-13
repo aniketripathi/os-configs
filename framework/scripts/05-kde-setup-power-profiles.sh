@@ -18,23 +18,8 @@ else
     echo "Using default power profile behavior."
 fi
 
-# 2. Deploy and install the gpu-switch script
-echo "Installing gpu-switch utility..."
-mkdir -p "$HOME/.local/bin"
-if [[ -f "$CUSTOM_CONFIGS/bin/gpu-switch" ]]; then
-    cp "$CUSTOM_CONFIGS/bin/gpu-switch" "$HOME/.local/bin/gpu-switch"
-    chmod +x "$HOME/.local/bin/gpu-switch"
-    echo "gpu-switch utility successfully installed to ~/.local/bin/gpu-switch."
-else
-    echo "Error: Source gpu-switch script not found at $CUSTOM_CONFIGS/bin/gpu-switch."
-    exit 1
-fi
 
-# 3. Initialize default-GPU configuration as AMD (iGPU)
-echo "Initializing default GPU to AMD (iGPU)..."
-"$HOME/.local/bin/gpu-switch" amd
-
-# 4. Print GPU information for verification
+# 3. Print GPU information for verification
 echo ""
 echo "Current GPU offload provider list (via switcherooctl):"
 if command -v switcherooctl &>/dev/null; then
@@ -43,4 +28,4 @@ else
     echo "switcherooctl utility is not installed."
 fi
 
-echo "Power profile and GPU setup complete. Please restart your KDE Plasma session to apply default GPU settings."
+echo "Power profile and GPU setup complete."
