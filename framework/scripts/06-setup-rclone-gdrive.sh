@@ -46,18 +46,24 @@ if [[ -n "${SUDO_USER:-}" ]]; then
     sudo chown "$SUDO_USER":"$SUDO_USER" "$GDRIVE_DIR"
 fi
 
-# 5. Append fstab mount entry if not already present
-FSTAB_LINE="${RCLONE_REMOTE}: $GDRIVE_DIR rclone rw,noauto,nofail,allow_other,_netdev,args2env,config=${RCLONE_CONF} 0 0"
+# 5. Append or update fstab mount entry with high-performance VFS and directory caching options
+# Performance optimization breakdown:
+# - vfs_cache_mode=full: Enables full read/write caching locally (gives instant local-disk behavior)
+# - vfs_cache_max_size=50G: Limits the cache folder footprint on disk
+# - vfs_cache_max_age=72h: Extends cache lifetime for frequently accessed files
+# - dir_cache_time=72h: Caches GDrive directory structure in memory (browsing directories becomes instant)
+# - buffer_size=128M: Allocates per-file read buffers for faster sequential access
+# - drive_chunk_size=64M: Optimizes upload chunk sizes for faster transfers
+FSTAB_LINE="${RCLONE_REMOTE}: $GDRIVE_DIR rclone rw,noauto,nofail,allow_other,_netdev,args2env,config=${RCLONE_CONF},vfs_cache_mode=full,vfs_cache_max_size=50G,vfs_cache_max_age=72h,dir_cache_time=72h,buffer_size=128M,drive_chunk_size=64M 0 0"
 
-echo "Checking /etc/fstab for Google Drive mount configuration..."
-if ! grep -q "[[:space:]]${GDRIVE_DIR}[[:space:]]" /etc/fstab; then
-    echo "Appending Google Drive rclone mount entry to /etc/fstab..."
-    echo "$FSTAB_LINE" | sudo tee -a /etc/fstab >/dev/null
-    echo "fstab entry appended successfully."
-else
-    echo "Google Drive mount entry already exists in /etc/fstab. Updating config path if necessary..."
-    # Target the line containing GDRIVE_DIR and replace the config path in-place
-    sudo sed -i "\|[[:space:]]${GDRIVE_DIR}[[:space:]]|s|config=[^,[:space:]]*|config=${RCLONE_CONF}|" /etc/fstab || true
+echo "Configuring /etc/fstab for optimized Google Drive mount..."
+if grep -q "[[:space:]]${GDRIVE_DIR}[[:space:]]" /etc/fstab; then
+    echo "Updating existing Google Drive mount entry in /etc/fstab..."
+    sudo sed -i "\|[[:space:]]${GDRIVE_DIR}[[:space:]]|d" /etc/fstab
 fi
+
+echo "Appending optimized Google Drive rclone mount entry to /etc/fstab..."
+echo "$FSTAB_LINE" | sudo tee -a /etc/fstab >/dev/null
+echo "fstab entry configured successfully."
 
 echo "Google Drive rclone fstab setup complete."

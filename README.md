@@ -144,7 +144,7 @@ sudo mount -a && sudo chown -R $USER:$USER /mnt/{core,library,temp}
 #### 2. Install Bootstrap Prerequisites
 Install the bare minimum tools needed to authenticate, configure snapper, and clone files:
 ```shell
-sudo dnf install -y git gh p7zip p7zip-plugins rclone snapper
+sudo dnf install -y git gh ksshaskpass p7zip p7zip-plugins rclone snapper
 ```
 
 #### 3. SSH Setup
