@@ -61,4 +61,18 @@ if [[ -f "${HOME}/.config/rclone/rclone.conf" ]]; then
     rsync -a --checksum "${HOME}/.config/rclone/rclone.conf" "$KEYS_DIR/rclone.conf"
 fi
 
+# Manually backup private gitconfig to keys/ (gitignored)
+if [[ -f "${HOME}/.gitconfig" ]]; then
+    echo "Syncing private gitconfig to $KEYS_DIR/gitconfig..."
+    mkdir -p "$KEYS_DIR"
+    rsync -a --checksum "${HOME}/.gitconfig" "$KEYS_DIR/gitconfig"
+fi
+
+# Manually backup SSH keys to keys/ (gitignored)
+if [[ -d "${HOME}/.ssh" ]]; then
+    echo "Syncing SSH keys to $KEYS_DIR/ssh/..."
+    mkdir -p "$KEYS_DIR/ssh"
+    rsync -a --checksum "${HOME}/.ssh/id_ed25519"* "$KEYS_DIR/ssh/" || true
+fi
+
 echo "Backup complete."

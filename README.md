@@ -262,10 +262,19 @@ bash framework/scripts/00-dnf-post-install.sh
 ### Phase 3: Core Setup & System Snapshots
 
 #### 8. Restore Configuration Profiles
-Parse `restore.conf` and copy config profiles to their relative home and system locations:
+Parse `restore.conf` and copy config profiles to their relative home and system locations. You can selectively restore components using command-line flags:
+*   `--all` (Default): Restores both system configurations and private keys (gitconfig, SSH).
+*   `--configs`: Restores only system and user configurations matching `restore.conf`.
+*   `--keys`: Restores only private credentials and keypairs from the local `keys/` vault.
+
 ```shell
 cd /mnt/core/os-configs
+# Restore everything (default):
 bash framework/scripts/01-restore-configs.sh
+
+# Or restore configs/keys selectively:
+bash framework/scripts/01-restore-configs.sh --configs
+bash framework/scripts/01-restore-configs.sh --keys
 ```
 
 #### 9. `[CAUTION]` Set Up Snapper and GRUB Rollback Configuration (Fedora Only)
