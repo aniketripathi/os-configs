@@ -1,5 +1,8 @@
 # Keys and Secrets
 keys/
 
-# IDE 
+# Backup copies created before overwriting files
+backup/
+
+# IDE
 .vscode/

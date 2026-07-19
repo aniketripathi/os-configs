@@ -1,24 +1,30 @@
-# gitconfig.default — Git Global Configuration Template
+# Git Global Configuration Template
 
 [user]
-	# Git display credentials (populated dynamically from keys/identity.env)
 	email = <email>
 	name = <user-name>
 
 [init]
-	# Standardize main branch naming conventions
 	defaultBranch = main
 
 [pull]
-	# Keep history clean by rebasing during updates
 	rebase = true
+	ff = only
+
+[push]
+	autoSetupRemote = true
+
+[fetch]
+	prune = true
 
 [color]
-	# Enable automatic terminal output color schemes
 	ui = auto
 
 [core]
-	# Handle line endings properly on Linux systems
 	autocrlf = input
-	# Default terminal editor for writing commits
 	editor = nano
+	fsmonitor = true
+	untrackedCache = true
+
+[pack]
+	threads = 0

@@ -1,0 +1,12 @@
+[Unit]
+Description=Compress and sync os-configs to local Google Drive mount
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/backup-configs.sh
+ExecStart=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/gdrive-backup.sh
+
+[Install]
+WantedBy=default.target

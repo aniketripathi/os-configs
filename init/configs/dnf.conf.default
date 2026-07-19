@@ -1,4 +1,3 @@
-# dnf.conf.default — Optimized DNF Configuration Template
 # see `man dnf.conf` for options and defaults
 
 [main]

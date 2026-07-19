@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=/mnt/core/os-configs/user-configs/custom/bin/ssh-autostart.sh
+Icon=application-x-shellscript
+Name=ssh-autostart.sh
+Type=Application
+X-KDE-AutostartScript=true

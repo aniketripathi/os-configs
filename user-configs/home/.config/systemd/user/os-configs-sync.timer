@@ -4,6 +4,7 @@ Description=Run os-configs synchronization weekly
 [Timer]
 OnCalendar=weekly
 Persistent=true
+# Staggered weekly sync delay: 10 minutes (600s) to distribute server load
 RandomizedDelaySec=600
 
 [Install]

@@ -1,6 +1,0 @@
-[Unit]
-Description=Compress and sync os-configs to local Google Drive mount
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash /mnt/core/os-configs/framework/automation/gdrive-backup.sh

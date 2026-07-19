@@ -1,4 +1,4 @@
-# powerdevil.default — KDE Power Management Configuration Template
+# KDE Power Management Configuration Template
 
 [AC][Display]
 # Enable display dimming on AC power after 10 minutes (600 seconds)

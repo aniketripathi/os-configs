@@ -4,6 +4,7 @@ Description=Run os-configs gdrive backup weekly
 [Timer]
 OnCalendar=weekly
 Persistent=true
+# Staggered weekly GDrive backup delay: 15 minutes (900s) to run after sync completes
 RandomizedDelaySec=900
 
 [Install]

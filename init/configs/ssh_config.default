@@ -1,10 +1,7 @@
-# ssh_config.default — SSH Client Default Configuration Template
+# SSH Client Configuration Template
 
 Host *
-    # Automatically add SSH keys to running SSH agent
     AddKeysToAgent yes
-    # Default private key path for authentication
     IdentityFile ~/.ssh/id_ed25519
-    # Keep idle connections alive by sending keep-alive packets
     ServerAliveInterval 60
     ServerAliveCountMax 3

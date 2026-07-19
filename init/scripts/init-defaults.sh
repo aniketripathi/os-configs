@@ -1,13 +1,15 @@
 #!/bin/bash
-# Generate default configs for first-time setup based on flags
-# Sourced reinstall.env variables are used for target locations
 
 set -euo pipefail
+IFS=$'\n\t'
 
-# Make sure we can source reinstall.env from framework
-source "$(dirname "$0")/../framework/configs/reinstall.env"
+# Load layout configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../../lib/layout.env
+source "${SCRIPT_DIR}/../../lib/layout.env"
 
-function generate() {
+# Copies source template file to target destination path if not exists
+generate() {
     local src="$INIT_DIR/configs/$1"
     local dest="$2"
     if [[ -f "$dest" ]]; then
@@ -19,6 +21,7 @@ function generate() {
     fi
 }
 
+# --- Execution sequence ---
 if [[ "${1:-}" == "--all" || -z "${1:-}" ]]; then
     generate "gitconfig.default" "$HOME_CONFIGS/.gitconfig"
     generate "ssh_config.default" "$HOME_CONFIGS/.ssh/config"
@@ -39,6 +42,9 @@ for arg in "$@"; do
         --snapper)  generate "snapper-root.default" "$SYSTEM_CONFIGS/snapper/configs/root" ;;
         --power)    generate "powerdevil.default" "$HOME_CONFIGS/.config/powerdevilrc" ;;
         --identity) generate "identity.env.default" "$KEYS_DIR/identity.env" ;;
-        *)          echo "Unknown flag: $arg" ;;
+        *)
+            echo "Unknown flag: $arg" >&2
+            exit 1
+            ;;
     esac
 done

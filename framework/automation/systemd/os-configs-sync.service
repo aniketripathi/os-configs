@@ -1,8 +1,0 @@
-[Unit]
-Description=Sync system files and push changes to github repository
-After=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/bin/bash /mnt/core/os-configs/framework/automation/backup-configs.sh
-ExecStartPost=/bin/bash /mnt/core/os-configs/framework/automation/git-autopush.sh

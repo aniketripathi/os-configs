@@ -1,5 +1,17 @@
-{
+{   
+    // Disable Telemetry
     "telemetry.feedback.enabled": false,
     "telemetry.telemetryLevel": "off",
-    "telemetry.editStats.enabled": false
+    "telemetry.editStats.enabled": false,
+    
+    // Word wrap config
+    "editor.wordWrap": "bounded",
+    
+    // Markdown config
+    "markdown.preview.scrollPreviewWithEditor": true,
+    "markdown.preview.scrollEditorWithPreview": true,
+
+    // Auto-load and auto-save 30 seconds
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 30000,
 }
