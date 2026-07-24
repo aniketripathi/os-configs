@@ -117,12 +117,66 @@ backup_section() {
     done
 }
 
+# Removes paths from the repository that are no longer listed in restore.conf
+prune_section() {
+    local section="$1"
+    local repo_base="$2"
+
+    if [[ ! -d "$repo_base" ]]; then
+        return 0
+    fi
+
+    echo "Pruning unreferenced configurations in repository section [$section]..."
+
+    # Build the allowed paths map (O(1) lookups)
+    declare -A allowed_map
+    build_allowed_map "$section" allowed_map
+
+    # Walk all files and directories under repo_base
+    local repo_items=()
+    while IFS= read -r -d $'\0' item; do
+        repo_items+=("${item#./}")
+    done < <(get_relative_items "$repo_base")
+
+    # Process items top-down
+    for item in "${repo_items[@]}"; do
+        local full_path="$repo_base/$item"
+
+        # Verify the item still exists (might have been deleted as a child of a previously pruned directory)
+        [[ ! -e "$full_path" ]] && continue
+
+        # Special exclusion: keys/identity.env must never be deleted
+        if [[ "$section" == "keys" && "$item" == "identity.env" ]]; then
+            continue
+        fi
+
+        if ! is_path_covered "$item" allowed_map; then
+            local section_prefix="user-configs/home"
+            [[ "$section" == "system" ]] && section_prefix="user-configs/system"
+            [[ "$section" == "keys" ]] && section_prefix="keys"
+
+            local backup_dest="$BACKUP_REPO_DIR/$section_prefix/$item"
+            echo "  Backup/Pruned: backing up repository $item -> $backup_dest"
+            run_as_owner mkdir -p "$(dirname "$backup_dest")"
+            run_as_owner cp -a "$full_path" "$backup_dest"
+
+            echo "  Removing unallowed repository path: $item"
+            rm -rf "$full_path"
+        fi
+    done
+}
+
 # --- Execution sequence ---
 echo "Starting configuration backup..."
 
 backup_section "home" "$USER_HOME" "$HOME_CONFIGS" "user-configs/home"
+prune_section "home" "$HOME_CONFIGS"
+
 backup_section "system" "/etc" "$SYSTEM_CONFIGS" "user-configs/system"
+prune_section "system" "$SYSTEM_CONFIGS"
+
 backup_section "keys" "$USER_HOME" "$KEYS_DIR" "keys"
+prune_section "keys" "$KEYS_DIR"
 
 # Re-ensure standard user ownership on entire repository
 if [[ -n "${OWNER:-}" && "$OWNER" != "root" ]]; then

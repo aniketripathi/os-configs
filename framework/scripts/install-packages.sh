@@ -123,7 +123,7 @@ fi
 # Apply global filesystem overrides for current user
 if command -v flatpak >/dev/null 2>&1; then
     echo "Applying global filesystem & device permissions to all user Flatpaks..."
-    sudo -u "$OWNER" flatpak override --user --filesystem=host --socket=session-bus
+    sudo -u "$OWNER" flatpak override --user --filesystem=host
 fi
 
 echo "Package installation and flatpak overriding complete."

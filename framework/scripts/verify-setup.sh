@@ -221,6 +221,46 @@ validate_restore_and_desktop() {
     check_configs "keys" "$USER_HOME" "~"
     echo ""
 
+    echo "--- Repository Cleanliness ---"
+    local has_unallowed=false
+    check_cleanliness() {
+        local section="$1"
+        local repo_base="$2"
+        local prefix_label="$3"
+
+        if [[ ! -d "$repo_base" ]]; then
+            return 0
+        fi
+
+        declare -A allowed_map
+        build_allowed_map "$section" allowed_map
+
+        local repo_items=()
+        while IFS= read -r -d $'\0' item; do
+            repo_items+=("${item#./}")
+        done < <(get_relative_items "$repo_base")
+
+        for item in "${repo_items[@]}"; do
+            if [[ "$section" == "keys" && "$item" == "identity.env" ]]; then
+                continue
+            fi
+
+            if ! is_path_covered "$item" allowed_map; then
+                print_status "DIFFERENT" "$prefix_label/$item (not listed in restore.conf)"
+                has_unallowed=true
+            fi
+        done
+    }
+
+    check_cleanliness "home" "$HOME_CONFIGS" "user-configs/home"
+    check_cleanliness "system" "$SYSTEM_CONFIGS" "user-configs/system"
+    check_cleanliness "keys" "$KEYS_DIR" "keys"
+    
+    if ! $has_unallowed; then
+        report_ok "Repository folders are clean."
+    fi
+    echo ""
+
     # Verify active SSH Agent and key load state (fixes exit code capture bug)
     local auth_sock="${SSH_AUTH_SOCK:-}"
     if [[ -z "$auth_sock" ]]; then
@@ -323,13 +363,19 @@ validate_rclone() {
 # [7] Automation Service Timers Verification
 validate_timers() {
     print_heading "[7] Automation Service Timers Verification"
-    if run_as_owner systemctl --user is-enabled os-configs-sync.timer &>/dev/null; then
+    
+    local systemctl_cmd=("systemctl" "--user")
+    if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
+        systemctl_cmd=("systemctl" "--user" "-M" "${OWNER}@")
+    fi
+
+    if "${systemctl_cmd[@]}" is-enabled os-configs-sync.timer &>/dev/null; then
         report_ok "os-configs-sync.timer is enabled."
     else
         report_skip "os-configs-sync.timer is disabled (optional)."
     fi
 
-    if run_as_owner systemctl --user is-enabled os-configs-gdrive.timer &>/dev/null; then
+    if "${systemctl_cmd[@]}" is-enabled os-configs-gdrive.timer &>/dev/null; then
         report_ok "os-configs-gdrive.timer is enabled (optional)."
     else
         report_skip "os-configs-gdrive.timer is disabled (optional)."
@@ -388,7 +434,19 @@ validate_packages() {
 
         for pkg in $packages; do
             [[ -z "$pkg" ]] && continue
-            if eval "$check_cmd \"\$pkg\"" &>/dev/null; then
+            
+            local is_installed=false
+            if [[ "$check_cmd" == "rpm -q" ]]; then
+                if rpm -q "$pkg" &>/dev/null || command -v "$pkg" &>/dev/null; then
+                    is_installed=true
+                fi
+            else
+                if eval "$check_cmd \"\$pkg\"" &>/dev/null; then
+                    is_installed=true
+                fi
+            fi
+
+            if $is_installed; then
                 if [[ "$mode" == "install" ]]; then
                     print_status "OK" "DNF/Flatpak package $pkg is installed"
                 else

@@ -23,7 +23,7 @@
 [core]
 	autocrlf = input
 	editor = nano
-	fsmonitor = true
+	fsmonitor = false
 	untrackedCache = true
 
 [pack]

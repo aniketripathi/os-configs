@@ -11,8 +11,8 @@ source "${SCRIPT_DIR}/../../lib/common.sh"
 require_root
 
 # --- User Customizable Mount Settings ---
-# RCLONE_REMOTE is loaded from layout.env
-RCLONE_MOUNT_OPTIONS="rw,nofail,allow_other,allow_non_empty,_netdev,args2env,vfs_cache_mode=full,vfs_cache_max_size=15G,vfs_cache_max_age=8760h,dir_cache_time=8760h,buffer_size=128M,drive_chunk_size=64M,vfs_read_chunk_size=32M,vfs_read_chunk_size_limit=off"
+# RCLONE_REMOTE and RCLONE_MOUNT_OPTIONS are loaded from layout.env
+RCLONE_MOUNT_OPTIONS="${RCLONE_MOUNT_OPTIONS:-rw,nofail,allow_other,allow_non_empty,_netdev,args2env,vfs_cache_mode=full,vfs_cache_max_size=15G,vfs_cache_max_age=8760h,dir_cache_time=8760h,buffer_size=128M,drive_chunk_size=64M,vfs_read_chunk_size=32M,vfs_read_chunk_size_limit=off}"
 RCLONE_CONF="${USER_HOME}/.config/rclone/rclone.conf"
 
 # Format fstab entry

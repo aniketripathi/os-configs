@@ -2,9 +2,11 @@
 
 ## About
 
-A framework designed to help the user to safely backup and restore their setup after a fresh reinstallation of OS (Fedora KDE Plasma). I created this for my personal use, hence most of the default settings are based on my own requirements. The goal is to get your system up and running like before in no time.
+A framework designed to help users safely back up and restore their setup after a fresh installation of the OS (Fedora KDE Plasma). I created this for my personal use, hence most of the default settings are based on my own requirements. The goal is to quickly restore your system to its previous state.
 
-I am well aware that there are existing tools to get to the same results. My intention here is to go beyond regular dotfiles to also include packages, snapper configuration, cloud sync, power profiles, and automated backup timers.
+I am well aware that there are existing tools that achieve the same results. My intention here is to go beyond regular dotfiles by also including packages, snapper configuration, cloud sync, power profiles, and automated backup timers.
+
+For a detailed reference of commands and operations, please refer to the [OPERATIONS.md](OPERATIONS.md) guide.
 
 ---
 
@@ -32,7 +34,6 @@ I am well aware that there are existing tools to get to the same results. My int
   - [7.1 Configure Rclone Google Drive](#71-configure-rclone-google-drive)
 - [8. Enable Automation Background Timers](#8-enable-automation-background-timers)
   - [8.1 Enable Background Timers](#81-enable-background-timers)
-  - [8.2 Command Aliases for Service Management](#82-command-aliases-for-service-management)
 - [9. Setting up Package Manager [FEDORA]](#9-setting-up-package-manager-fedora)
 - [10. GPU Setup & Secure Boot Key Enrollment](#10-gpu-setup--secure-boot-key-enrollment)
   - [10.1 Install GPU Drivers [HARDWARE]](#101-install-gpu-drivers-hardware)
@@ -73,19 +74,19 @@ os-configs/
   - **home** - Dotfiles associated with the home directory
   - **system** - Dotfiles associated with the root directory (`/etc`)
 
-ℹ️ Note: The framework will use the default directory structure and partition layout in many of the configurations, especially before cloning the repository. If you prefer custom labels and directory structures, update the commands accordingly.
+ℹ️ Note: The framework will use the default directory structure and partition layout across most configurations, especially before cloning the repository. If you prefer custom labels and directory structures, update the commands accordingly.
 
 #### 1.2 Tag Conventions
 
-- `[CAUTION]`: Affects system boot partition flags, mounts, or secure states. Pay special attention when performing actions in this category.
+- `[CAUTION]`: Affects system boot partition flags, mounts, or secure boot settings. Pay special attention when performing actions in this category.
 - `[HARDWARE]`: Section is tailored for specific hardware.
 - `[FEDORA]`: Section specifically associated with the Fedora KDE Plasma setup.
-- `[FIRST-TIME-BACKUP]`: Section designed for the first-time backup use case.
-- `[FIRST-TIME-RESTORE]`: Section associated with a first-time restore.
+- `[FIRST-TIME-BACKUP]`: Designed for the initial backup setup.
+- `[FIRST-TIME-RESTORE]`: Designed for the initial restoration setup.
 
 #### 1.3 Permissions & Ownership Policy
 
-To maintain a secure and consistent environment, the framework enforces creation policies using a `umask 027` configuration:
+To maintain a secure and consistent environment, the framework enforces file creation permission policies using a `umask 027` configuration:
 
 - **Umask Policy**: The `umask 027` is globally configured at the top of `layout.env` (for all script operations) and `custom/.profile` (for user sessions). This automatically ensures that any new directory is created with `750` permissions and any new file is created with `640` permissions.
 - **System Configurations**: System files and directories restored under `/etc/` are set to default permissions (directories: `750`, files: `640`) and owned by `root:root`.
@@ -94,9 +95,9 @@ To maintain a secure and consistent environment, the framework enforces creation
 
 ### 2. Partition Setup & Formatting [CAUTION, HARDWARE]
 
-Format the disk and create partitions depending on the number and size of disks. The goal is to create three partitions (ext4) with labels `core`, `library`, and `temp`. If you only formatted your root partition during install and your other data partitions exist, skip this step. It is **recommended** to use a GUI like `KDE Partition Manager`.
+Format the disk and create partitions based on the number and size of your disks. The goal is to create three partitions (ext4) with labels `core`, `library`, and `temp`. If you only formatted your root partition during installation and your other data partitions exist, skip this step. It is **recommended** to use a GUI like `KDE Partition Manager`.
 
-ℹ️ Note: If you choose not to create partitions or use different labels/directory names, update `framework/configs/layout.env` accordingly once you clone the repository.
+ℹ️ Note: If you choose not to create partitions or use different labels/directory names, update `lib/layout.env` accordingly once you clone the repository.
 
 #### 2.1 Check existing disks and free space
 
@@ -109,9 +110,9 @@ sudo parted /dev/sda unit GB print free
 
 #### 2.2 Format and Label Partitions
 
-Update the variables as per your disk and requirements. You can skip this step if you have already formatted or don't want to create separate partitions. Unmount any existing partitions using `sudo umount <path>` before re-partitioning.
+Update the variables according to your disk layout and requirements. You can skip this step if you have already formatted your partitions or do not want to create separate partitions. Unmount any existing partitions using `sudo umount <path>` before re-partitioning.
 
-Define shared variables (customize disk and size values as needed). Leave some extra space at the end for SSD **over-provisioning**. The expected unit is GiB. Replace `/dev/sda` with your target disk.
+Define shared variables (customize disk and size values as needed). Leave some extra space at the end for SSD **over-provisioning**. The unit of measurement is GiB. Replace `/dev/sda` with your target disk.
 
 ```shell
 DISK="/dev/sda"
@@ -128,7 +129,7 @@ PARTITION_SIZE3=100
 
 #### Scenario 1 - Wipe existing disk and create partitions
 
-⚠️ Warning: This will wipe out the entire disk. Backup any data before proceeding.
+⚠️ Warning: This will wipe the entire disk. Back up any critical data before proceeding.
 
 ```shell
 sudo parted -s $DISK mklabel gpt
@@ -138,7 +139,7 @@ FIRST_PART_NUM=1
 
 #### Scenario 2 - Shrink the existing root partition and create partitions in freed space
 
-This assumes you want to shrink an existing root partition (by default assumed to be partition 2 on UEFI setups, or partition 1 on legacy setups). Set `SHRINK_TO_SIZE` to the target size (in GiB) you want to shrink it down to. The script validates that this value is not larger than the current disk size and leaves enough room for all three new partitions.
+This assumes you want to shrink an existing root partition (by default assumed to be partition 2 on UEFI systems or partition 1 on legacy configurations). Set `SHRINK_TO_SIZE` to the target size (in GiB) you want to shrink it to. The script validates that this value is not larger than the current disk size and leaves enough room for all three new partitions.
 
 ```shell
 SHRINK_TO_SIZE=200
@@ -193,11 +194,11 @@ sudo mkfs.ext4 -L $PARTITION_LABEL2 "${PART_PREFIX}$((FIRST_PART_NUM + 1))"
 sudo mkfs.ext4 -L $PARTITION_LABEL3 "${PART_PREFIX}$((FIRST_PART_NUM + 2))"
 ```
 
-ℹ️ Note: For any other scenario, use a GUI tool like `KDE Partition Manager` as recommended at the start of this section.
+ℹ️ Note: For other scenarios, use a GUI tool like `KDE Partition Manager` as recommended at the start of this section.
 
 #### 2.3 Temporary Mounts for Repository Setup
 
-To clone the repository and run the setup scripts, temporarily mount the `core` partition. We will later update `/etc/fstab` to ensure that partitions are loaded at startup:
+To clone the repository and run the setup scripts, temporarily mount the `core` partition. We will later update `/etc/fstab` to ensure these partitions are automatically mounted at startup:
 
 ```shell
 sudo mkdir -p /mnt/core
@@ -219,22 +220,22 @@ sudo dnf install -y --skip-unavailable crudini git gh ksshaskpass 7zip rclone sn
 
 #### 3.1 SSH Setup
 
-- **Scenario A - Restoring existing keys**: If the keys already exist in the default `keys/.ssh/` directory or any other custom location:
+- **Scenario A - Restoring existing keys**: If your SSH keys already exist in the default `keys/.ssh/` directory or any other custom location:
+
+  ```shell
+  install -D -t ~/.ssh/ /mnt/core/os-configs/keys/.ssh/id_ed25519*
+  ```
+
+- **Scenario B - [FIRST-TIME-RESTORE]**: If you do not have your original SSH keys or have never configured them, generate a new SSH key. The SSH key comment will default to `username@hostname`. Enter a passphrase and save it for future reference.
+
+  ```shell
+  ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)"
+  ```
+
+After restoring or generating the keys, update permissions to restrict access:
 
 ```shell
-install -D -t ~/.ssh/ /mnt/core/os-configs/keys/.ssh/id_ed25519* && chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519 && chmod 644 ~/.ssh/id_ed25519.pub
-```
-
-- **Scenario B - [FIRST-TIME-RESTORE]**: If you don't have your original ssh keys or never configured any, create a new ssh key. The ssh key title will be username@hostname. Enter the passphrase and save it for future reference.
-
-```shell
-ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)"
-```
-
-After creating (or copying) the key, update permissions to restrict access to the current user only.
-
-```shell
-chmod 600 ~/.ssh/id_ed25519 && chmod 644 ~/.ssh/id_ed25519.pub
+chmod 700 ~/.ssh && chmod 600 ~/.ssh/id_ed25519 && chmod 644 ~/.ssh/id_ed25519.pub
 ```
 
 ℹ️ SSH Permissions Policy:
@@ -258,11 +259,11 @@ ssh-add -l
 echo $SSH_AUTH_SOCK
 ```
 
-We will later configure the ssh to auto-load at startup without having to enter passphrase every time.
+We will later configure SSH to auto-load at startup without requiring you to enter the passphrase every time.
 
 #### 3.2 Authenticate GitHub CLI & Clone Repository
 
-Login to github using gh cli auth command. When prompted select **SSH** as the mode of communication and then select the key to upload to github. Your ssh public key will be automatically added to your account.
+Log in to GitHub using the GitHub CLI (`gh auth login`) command. When prompted, select **SSH** as the preferred protocol and choose the key you want to upload. Your SSH public key will be automatically added to your account.
 
 ```shell
 gh auth login
@@ -270,7 +271,7 @@ ssh -T git@github.com
 gh auth status
 ```
 
-Clone the repository os-configs
+Clone the `os-configs` repository:
 
 ```shell
 gh repo clone <github-username>/os-configs /mnt/core/os-configs
@@ -278,11 +279,11 @@ gh repo clone <github-username>/os-configs /mnt/core/os-configs
 
 #### 3.3 SSH startup loading
 
-Registers SSH key with KDE Wallet for passwordless unlock on login.
+This registers your SSH key with KDE Wallet for passwordless unlock on login.
 
-ℹ️ Note: The ssh autostart script is stored inside the `user-configs/custom` directory and will be automatically deployed when home configurations are restored in **Section 5**. No manual copying or permissions setup is required during this step.
+ℹ️ Note: The SSH autostart script is stored inside the `user-configs/custom` directory and will be automatically deployed when home configurations are restored in **Section 5**. No manual copying or permissions setup is required during this step.
 
-To register your password with `ksshaskpass` now (select "Remember password" in the popup):
+To register your passphrase with `ksshaskpass` now (select "Remember password" in the popup):
 
 ```shell
 SSH_ASKPASS_REQUIRE=prefer ssh-add ~/.ssh/id_ed25519
@@ -292,7 +293,7 @@ SSH_ASKPASS_REQUIRE=prefer ssh-add ~/.ssh/id_ed25519
 
 ### 4. Default Configuration [FIRST-TIME-BACKUP, FIRST-TIME-RESTORE]
 
-If you are using this framework for the first time, you may not have any customized configs. The framework provides some default templates for the configs to get you started.
+If you are using this framework for the first time, you may not have any customized configurations. The framework provides some default templates for the configurations to get you started.
 
 #### 4.1 Default config variables and keys
 
@@ -304,9 +305,9 @@ If you are using this framework for the first time, you may not have any customi
     install -D /mnt/core/os-configs/init/configs/identity.env.default /mnt/core/os-configs/keys/identity.env
     ```
 
-- The live `framework/configs/layout.env` file contains environment variables pointing to directories and files.
+- The live `lib/layout.env` file defines environment variables specifying directory and file paths.
 
-- Once your configurations and mount points are updated in `layout.env`, run the fstab automation script with `sudo` to create directories, set correct ownership and permissions (750), and finalize entries in `/etc/fstab`:
+- Once your configurations and mount points are updated in `layout.env`, run the fstab automation script using `sudo` to create directories, set correct ownership and permissions (750), and finalize entries in `/etc/fstab`:
 
     ```shell
     sudo /mnt/core/os-configs/framework/scripts/update-fstab.sh
@@ -318,7 +319,7 @@ If you are using this framework for the first time, you may not have any customi
     source /mnt/core/os-configs/keys/identity.env
     ```
 
-The primary SSH key for Git communication is now configured. If you have additional SSH keys in your live SSH directory, copy them to the keys vault using:
+The primary SSH key for Git communication is now configured. If you have additional SSH keys in your live SSH directory, copy them to the key vault using:
 
 ```shell
 install -D -t /mnt/core/os-configs/keys/.ssh/ ~/.ssh/id_ed25519*
@@ -326,7 +327,7 @@ install -D -t /mnt/core/os-configs/keys/.ssh/ ~/.ssh/id_ed25519*
 
 #### 4.2 Initializing Default Configurations
 
-The `init` directory contains clean, default configuration templates for system configurations and core apps. If you do not have existing configurations to restore, you can generate default templates:
+The `init` directory contains clean, default configuration templates for system settings and core applications. If you do not have existing configurations to restore, you can generate default templates:
 
 ```shell
 cd /mnt/core/os-configs && bash init/scripts/init-defaults.sh --all
@@ -347,7 +348,7 @@ Alternative flags for the initialization script:
 
 ### 5. Restore Configurations & Desktop Settings
 
-The restoration script parses `restore.conf` and copies configuration profiles to their relative home and system locations (including SSH configurations, KDE Powerdevil profiles, and DNF configs). You can selectively restore components using command-line flags:
+The restoration script parses `restore.conf` and copies configuration profiles to their respective home and system locations (including SSH configurations, KDE Powerdevil profiles, and DNF configurations). You can selectively restore components using command-line flags:
 
 - `--all` (Default): Restores both system configurations and private keys (gitconfig, SSH).
 - `--configs`: Restores only system and user configurations matching `restore.conf`.
@@ -362,9 +363,9 @@ bash /mnt/core/os-configs/framework/scripts/restore-configs.sh --all [-f | --for
 
 ### 6. Set Up BTRFS & Snapper [CAUTION, FEDORA]
 
-The Snapper setup script generates root snapshot rules, optimizes timeline retention limits, and configures GRUB boot submenus. For detailed setup and configuration details, see the [Snapper Arch Wiki](https://wiki.archlinux.org/title/Snapper).
+The Snapper setup script generates root snapshot rules, optimizes timeline retention limits, and configures GRUB boot submenus. For detailed setup instructions and configurations, see the [Snapper Arch Wiki](https://wiki.archlinux.org/title/Snapper).
 
-ℹ️ Note: Running the Snapper setup script requires `sudo` privileges because it configures system-wide Btrfs subvolumes, registers Snapper configs, and updates the GRUB boot menu. If the Snapper root configuration template is missing from both `/etc/snapper/configs/root` and the repository backups, the script will exit with an error instructing you to run `restore-configs.sh` or `init-defaults.sh` first.
+ℹ️ Note: Running the Snapper setup script requires `sudo` privileges because it configures system-wide Btrfs subvolumes, registers Snapper configurations, and updates the GRUB boot menu. If the Snapper root configuration template is missing from both `/etc/snapper/configs/root` and the repository backups, the script will exit with an error instructing you to run `restore-configs.sh` or `init-defaults.sh` first.
 
 ```shell
 sudo bash /mnt/core/os-configs/framework/scripts/snapper-setup.sh
@@ -402,7 +403,24 @@ Configure rclone Google Drive credentials and mount parameters:
 rclone config
 ```
 
-ℹ️ Note: Sensitive credentials, OAuth Client IDs, and Access tokens reside inside `~/.config/rclone/rclone.conf` which is backed up.
+ℹ️ Note: Sensitive credentials, OAuth Client IDs, and Access tokens reside inside `~/.config/rclone/rclone.conf`.
+
+- **Restoration on a new setup**: If this is not a first-time setup and your configurations were already backed up to your repository's `keys/` vault at `keys/.config/rclone/rclone.conf`, running `framework/scripts/rclone-setup.sh` will automatically restore the `rclone.conf` configuration to `~/.config/rclone/rclone.conf` and perform the initial dry-run and actual bi-directional sync (`bisync`). You do not need to run `rclone config` again after reinstalling the OS.
+
+- **First-time setup**: If you do not have an existing backup, you must run `rclone config` manually first to authorize access.
+
+#### 7.2 Customizing Rclone Mount Options
+
+The Google Drive mount is configured with optimized caching and streaming parameters. These settings are defined in `lib/layout.env` under the `RCLONE_MOUNT_OPTIONS` variable:
+
+- `vfs_cache_mode=full`: Enables full local caching of reads and writes for reliability.
+- `vfs_cache_max_size=15G`: Sets the local cache size limit to 15 GB.
+- `vfs_cache_max_age=8760h`: Specifies cache retention duration (8760 hours/1 year).
+- `dir_cache_time=8760h`: Caches directory listings locally for faster access.
+
+If you want to customize these parameters (e.g., to decrease the cache size or adjust buffer options), update the `RCLONE_MOUNT_OPTIONS` variable inside `lib/layout.env` before running the setup script. Since your configurations are backed up, your customized mount options will be preserved across reinstallations.
+
+#### 7.3 Mount the Directory and Update fstab
 
 Add the rclone mount configuration to fstab:
 
@@ -410,13 +428,15 @@ Add the rclone mount configuration to fstab:
 sudo bash /mnt/core/os-configs/framework/scripts/rclone-setup.sh
 ```
 
+ℹ️ Note: For detailed manual sync commands and mount verification commands, refer to the [OPERATIONS.md](OPERATIONS.md) guide.
+
 ---
 
 ### 8. Enable Automation Background Timers
 
-The background automation framework is built around three distinct operations:
+The background automation framework consists of three distinct operations:
 
-1. **Backup**: Pulls/syncs the latest live files (home configurations, system files, and private keys) from the active running system into your local `os-configs` repository directory (`backup-configs.sh`). By default, conflicting files (differing between live and repository) are skipped. Run with `-f` or `--force` to overwrite the repository copies, which automatically backs up the existing repository files to `backup/repo/` (preserving directory structure) first.
+1. **Backup**: Synchronizes the latest live files (home configurations, system files, and private keys) from the running system into your local `os-configs` repository directory (`backup-configs.sh`). By default, conflicting files (differing between live and repository) are skipped. Run the script with `-f` or `--force` to overwrite the repository copies, which automatically backs up the existing repository files to `backup/repo/` (preserving directory structure) first. Additionally, the backup script automatically prunes any configurations from the repository that are no longer referenced in `restore.conf` (safely copying them to `backup/repo/` first, and ignoring your host directories completely to avoid host data loss).
 2. **Git Commit & Push**: Commits the updated files in the local repository and pushes them to your GitHub remote repository (`git-autopush.sh`).
 3. **GDrive Sync**: Compresses the local repository folder (excluding `.git/`, `keys/`, and the local `backup/` folders) and updates the archive on your Google Drive mount (`gdrive-backup.sh`).
 
@@ -436,21 +456,7 @@ Once your configuration files are restored and your shell environment is reloade
   os-configs-gdrive-enable
   ```
 
-#### 8.2 Command Aliases for Service Management
-
-ℹ️ Note: Sourcing the custom profile script (`custom/.profile`) automatically registers convenient Git synchronization and Google Drive backup aliases directly to your shell environment:
-
-| Category | Alias | Description | Equivalent systemd Command |
-| :--- | :--- | :--- | :--- |
-| Git Sync | `os-configs-sync-now` | Force-start local files backup and Git push immediately | `systemctl --user start os-configs-sync.service` |
-| Git Sync | `os-configs-sync-enable` | Enable and start the weekly Git synchronization timer | `systemctl --user enable --now os-configs-sync.timer` |
-| Git Sync | `os-configs-sync-disable` | Disable and stop the weekly Git synchronization timer | `systemctl --user disable --now os-configs-sync.timer` |
-| Git Sync | `os-configs-sync-logs` | View the last 20 log messages for the Git sync service | `journalctl --user -u os-configs-sync.service -n 20` |
-| GDrive | `os-configs-gdrive-now` | Compress local files and update Google Drive archive immediately | `systemctl --user start os-configs-gdrive.service` |
-| GDrive | `os-configs-gdrive-enable` | Enable and start the weekly Google Drive backup timer | `systemctl --user enable --now os-configs-gdrive.timer` |
-| GDrive | `os-configs-gdrive-disable` | Disable and stop the weekly Google Drive backup timer | `systemctl --user disable --now os-configs-gdrive.timer` |
-| GDrive | `os-configs-gdrive-logs` | View the last 20 log messages for the GDrive backup service | `journalctl --user -u os-configs-gdrive.service -n 20` |
-| General | `os-configs-status` | List all active timers, their next run schedules, and remaining time | `systemctl --user list-timers "os-configs-*"` |
+ℹ️ Note: For service management command aliases, manual backup script options, execution ordering rules, and background timer customization, refer to the [OPERATIONS.md](OPERATIONS.md) guide.
 
 Reboot: **PERFORM REBOOT (Verifies Bootloader Menu, Snapshots, and Active Services)**
 
@@ -490,13 +496,13 @@ sudo dnf install akmod-nvidia
 
 #### 10.2 Secure Boot
 
-To check if secure boot is enabled or not use:
+To verify whether Secure Boot is enabled, run:
 
 ```shell
 mokutil --sb-state
 ```
 
-The secure boot can be disabled permanently from UEFI firmware screen. You can also disable it using:
+Secure Boot can be permanently disabled from the UEFI firmware interface, or temporarily disabled using:
 
 ```shell
 sudo mokutil --disable-validation
@@ -548,7 +554,7 @@ Alternative flags for the package installation script:
 
 #### 11.2 Purging Unwanted Applications
 
-Validate and remove listed default games, Akonadi organizers, and other unwanted applications to clean the system:
+Validate and remove listed default games, Akonadi organizers, and other unwanted applications to declutter the system:
 
 ```shell
 sudo bash /mnt/core/os-configs/framework/scripts/uninstall-unwanted.sh
@@ -611,7 +617,7 @@ sudo usermod -aG docker $USER
 
 ### 12. System Verification
 
-Check system integrity and verify that all configurations are correct, all requested applications mentioned in the configuration files are installed, and all unwanted applications have been successfully removed:
+Verify system integrity, check that configurations are correct, all requested applications mentioned in the configuration files are installed, and all unwanted applications have been successfully removed:
 
 ℹ️ Note: Running the verification script requires `sudo` privileges to validate Snapper rules, check system-wide GRUB parameters, and inspect block mounts.
 

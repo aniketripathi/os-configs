@@ -9,6 +9,13 @@ source "${LIB_DIR}/layout.env"
 
 # Resolve non-root owner and their home directory
 OWNER="${SUDO_USER:-$USER}"
+if [[ "$OWNER" == "root" ]]; then
+    # Fallback to the owner of the repository directory
+    repo_owner=$(stat -c '%U' "$OS_CONFIGS" 2>/dev/null || true)
+    if [[ -n "$repo_owner" && "$repo_owner" != "root" ]]; then
+        OWNER="$repo_owner"
+    fi
+fi
 # USER_HOME is used by external scripts that source this file (e.g., restore-configs.sh, verify-setup.sh, backup-configs.sh)
 USER_HOME=$(getent passwd "$OWNER" | cut -d: -f6)
 
@@ -111,6 +118,9 @@ apply_default_permissions() {
         else
             sudo chmod 640 "$target"
         fi
+        if command -v restorecon >/dev/null 2>&1; then
+            sudo restorecon -R "$target"
+        fi
     else
         if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
             sudo chown "${OWNER}:${OWNER}" "$target"
@@ -131,6 +141,71 @@ get_relative_files() {
         (cd "$target_path" && find . -type f ! -name "*.old" ! -name "*.bak" -print0 2>/dev/null || true)
     fi
 }
+
+# Lists recursive files and directories in a path (relative to it) ignoring *.old and *.bak.
+# Outputs NUL-separated relative paths.
+get_relative_items() {
+    local target_path="$1"
+    if [[ -d "$target_path" ]]; then
+        (cd "$target_path" && find . -mindepth 1 ! -name "*.old" ! -name "*.bak" -print0 2>/dev/null || true)
+    fi
+}
+
+# Builds the allowed paths map for a section from restore.conf
+# Args: section, map_name (nameref)
+build_allowed_map() {
+    local section="$1"
+    local -n __allowed_map="$2"
+    
+    local RESTORE_CONF="$CONFIGS_DIR/restore.conf"
+    if [[ ! -f "$RESTORE_CONF" ]]; then
+        return 0
+    fi
+
+    local allowed_paths=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && allowed_paths+=("$line")
+    done < <(crudini --get "$RESTORE_CONF" "$section" || true)
+
+    local allowed
+    for allowed in "${allowed_paths[@]}"; do
+        local clean_allowed="${allowed%/}"
+        __allowed_map["$clean_allowed"]="exact"
+
+        # Add all ancestor directories as "ancestor" if not already "exact"
+        local parent="$clean_allowed"
+        while [[ "$parent" != "." && "$parent" != "/" ]]; do
+            parent=$(dirname "$parent")
+            if [[ -z "${__allowed_map[$parent]:-}" ]]; then
+                __allowed_map["$parent"]="ancestor"
+            fi
+        done
+    done
+}
+
+# Checks if a repository item is covered by the allowed configurations map in O(1)
+# Args: rel_path, map_name (nameref)
+is_path_covered() {
+    local rel_path="${1%/}"
+    local -n __allowed_map="$2"
+
+    # 1. Exact or ancestor match (O(1))
+    if [[ -n "${__allowed_map[$rel_path]:-}" ]]; then
+        return 0
+    fi
+
+    # 2. Descendant match: check if any parent directory is an exact allowed path (O(depth))
+    local p="$rel_path"
+    while [[ "$p" != "." && "$p" != "/" ]]; do
+        p=$(dirname "$p")
+        if [[ "${__allowed_map[$p]:-}" == "exact" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 
 # Checks if a specific file exists and sources the custom profile.
 # Returns 0 if it exists and sources the custom profile, 1 otherwise.
