@@ -66,7 +66,7 @@ os-configs/
     └── system/
 ```
 
-- **framework** - Files associated with creating and maintaining this framework
+- **framework** - Framework scripts and configuration files (including the file synchronization list `sync-manifest.conf` and packages list `packages.conf`)
 - **init** - Default templates and configurations for first-time setup
 - **keys** - Sensitive information. Never commit these to Git.
 - **user-configs** - User and system dotfiles
@@ -348,12 +348,12 @@ Alternative flags for the initialization script:
 
 ### 5. Restore Configurations & Desktop Settings
 
-The restoration script parses `restore.conf` and copies configuration profiles to their respective home and system locations (including SSH configurations, KDE Powerdevil profiles, and DNF configurations). You can selectively restore components using command-line flags:
+The restoration script parses `sync-manifest.conf` and copies configuration profiles to their respective home and system locations (including SSH configurations, KDE Powerdevil profiles, and DNF configurations). You can selectively restore components using command-line flags:
 
 - `--all` (Default): Restores both system configurations and private keys (gitconfig, SSH).
-- `--configs`: Restores only system and user configurations matching `restore.conf`.
+- `--configs`: Restores only system and user configurations matching `sync-manifest.conf`.
 - `--keys`: Restores only private credentials and keypairs from the local vault.
-- `-f` or `--force`: Force-restores conflicting files (where the repository and live versions differ), backing up the existing live copy to `backup/live/` (preserving directory structure) before overwriting. Without this flag, any conflicting file is safely skipped.
+- `-f` or `--force`: Required only when a live file is **newer** than the repository copy (a conflict). Without this flag, conflicts are skipped. Non-conflicting overwrites (repository copy is newer) proceed automatically and the old live copy is always saved to `backup/live/` first.
 
 ```shell
 bash /mnt/core/os-configs/framework/scripts/restore-configs.sh --all [-f | --force]
@@ -428,17 +428,17 @@ Add the rclone mount configuration to fstab:
 sudo bash /mnt/core/os-configs/framework/scripts/rclone-setup.sh
 ```
 
-ℹ️ Note: For detailed manual sync commands and mount verification commands, refer to the [OPERATIONS.md](OPERATIONS.md) guide.
-
 ---
 
 ### 8. Enable Automation Background Timers
 
 The background automation framework consists of three distinct operations:
 
-1. **Backup**: Synchronizes the latest live files (home configurations, system files, and private keys) from the running system into your local `os-configs` repository directory (`backup-configs.sh`). By default, conflicting files (differing between live and repository) are skipped. Run the script with `-f` or `--force` to overwrite the repository copies, which automatically backs up the existing repository files to `backup/repo/` (preserving directory structure) first. Additionally, the backup script automatically prunes any configurations from the repository that are no longer referenced in `restore.conf` (safely copying them to `backup/repo/` first, and ignoring your host directories completely to avoid host data loss).
+1. **Backup**: Synchronizes the latest live files (home configurations, system files, and private keys) from the running system into your local `os-configs` repository directory (`backup-configs.sh`). Files are always copied when the live copy is newer than the repository copy, and the old repository copy is saved to `backup/repo/` first. If the repository copy is newer (a conflict), the file is skipped unless `-f`/`--force` is used. The backup script also prunes any configurations from the repository that are no longer referenced in `sync-manifest.conf` (safely copying them to `backup/repo/` first).
 2. **Git Commit & Push**: Commits the updated files in the local repository and pushes them to your GitHub remote repository (`git-autopush.sh`).
 3. **GDrive Sync**: Compresses the local repository folder (excluding `.git/`, `keys/`, and the local `backup/` folders) and updates the archive on your Google Drive mount (`gdrive-backup.sh`).
+
+ℹ️ Note: The `keys/` directory is intentionally excluded from all automated backups. To manually back up sensitive keys (SSH, rclone, identity) to Google Drive (`/mnt/core/gdrive/backup/security/` by default), use `keys-vault.sh`.
 
 #### 8.1 Enable Background Timers
 
@@ -455,8 +455,6 @@ Once your configuration files are restored and your shell environment is reloade
   ```shell
   os-configs-gdrive-enable
   ```
-
-ℹ️ Note: For service management command aliases, manual backup script options, execution ordering rules, and background timer customization, refer to the [OPERATIONS.md](OPERATIONS.md) guide.
 
 Reboot: **PERFORM REBOOT (Verifies Bootloader Menu, Snapshots, and Active Services)**
 

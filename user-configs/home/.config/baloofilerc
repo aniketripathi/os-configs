@@ -1,3 +1,6 @@
+[Basic Settings]
+Indexing-Enabled=false
+
 [General]
 Indexing-Enabled=false
 dbVersion=2

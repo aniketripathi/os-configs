@@ -5,6 +5,8 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+StandardOutput=journal
+StandardError=journal
 ExecStartPre=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/backup-configs.sh
 ExecStart=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/gdrive-backup.sh
 

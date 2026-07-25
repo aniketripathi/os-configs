@@ -10,7 +10,7 @@ source "${SCRIPT_DIR}/../../lib/common.sh"
 # Ensure script is run with sudo/root
 require_root
 
-CONF="$CONFIGS_DIR/packages.conf"
+CONF="$PACKAGES_CONF"
 
 # --- Validation Checks ---
 if [[ ! -f "$CONF" ]]; then

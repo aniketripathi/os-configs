@@ -5,7 +5,7 @@
     "telemetry.editStats.enabled": false,
     
     // Word wrap config
-    "editor.wordWrap": "bounded",
+    "editor.wordWrap": "on",
     
     // Markdown config
     "markdown.preview.scrollPreviewWithEditor": true,
@@ -14,4 +14,5 @@
     // Auto-load and auto-save 30 seconds
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 30000,
+    "security.workspace.trust.untrustedFiles": "open",
 }

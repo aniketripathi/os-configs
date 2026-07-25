@@ -5,8 +5,9 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/backup-configs.sh
-ExecStartPost=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/git-autopush.sh
+StandardOutput=journal
+StandardError=journal
+ExecStart=/bin/bash -c 'backup-configs.sh && git-autopush.sh'
 
 [Install]
 WantedBy=default.target

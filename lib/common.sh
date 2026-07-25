@@ -82,10 +82,10 @@ print_heading() {
     echo -e "\e[1;36m$1\e[0m"
 }
 
-# Unified status printer with automatic indentation and counter updates
+# Unified status printer. Optional 3rd arg appended as detail to the message.
 print_status() {
     local status="$1"
-    local msg="$2"
+    local msg="$2${3:+ $3}"
     case "$status" in
         "OK")
             echo -e "  \e[32m[OK]\e[0m $msg"
@@ -106,24 +106,25 @@ print_status() {
     esac
 }
 
-# Apply standard permissions & ownership (umask 027 default: 750 for directories, 640 for files)
+# Apply standard permissions & ownership (750 dirs, 640 files).
+# System path: always called as root, so no sudo needed.
 apply_default_permissions() {
     local target="$1"
     local is_system="$2"
 
     if [[ "$is_system" == "true" ]]; then
-        sudo chown root:root "$target"
+        chown root:root "$target"
         if [[ -d "$target" ]]; then
-            sudo chmod 750 "$target"
+            chmod 750 "$target"
         else
-            sudo chmod 640 "$target"
+            chmod 640 "$target"
         fi
-        if command -v restorecon >/dev/null 2>&1; then
-            sudo restorecon -R "$target"
+        if command -v restorecon > /dev/null 2>&1; then
+            restorecon -R "$target"
         fi
     else
         if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
-            sudo chown "${OWNER}:${OWNER}" "$target"
+            chown "${OWNER}:${OWNER}" "$target"
         fi
         if [[ -d "$target" ]]; then
             run_as_owner chmod 750 "$target"
@@ -133,21 +134,52 @@ apply_default_permissions() {
     fi
 }
 
-# Lists recursive files in a path (relative to it) ignoring *.old and *.bak files.
-# Outputs NUL-separated relative file paths.
+# Lists recursive files in a path (relative to it) ignoring *.old and *.bak.
+# find errors (e.g. permission denied) print to stderr and are skipped; not suppressed.
 get_relative_files() {
     local target_path="$1"
     if [[ -d "$target_path" ]]; then
-        (cd "$target_path" && find . -type f ! -name "*.old" ! -name "*.bak" -print0 2>/dev/null || true)
+        (cd "$target_path" && find . -type f ! -name "*.old" ! -name "*.bak" -print0 || true)
     fi
 }
 
 # Lists recursive files and directories in a path (relative to it) ignoring *.old and *.bak.
-# Outputs NUL-separated relative paths.
 get_relative_items() {
     local target_path="$1"
     if [[ -d "$target_path" ]]; then
-        (cd "$target_path" && find . -mindepth 1 ! -name "*.old" ! -name "*.bak" -print0 2>/dev/null || true)
+        (cd "$target_path" && find . -mindepth 1 ! -name "*.old" ! -name "*.bak" -print0 || true)
+    fi
+}
+
+# Returns 0 (conflict) if dest exists, content differs, and dest is newer than src.
+# Conflict = force required. src newer = safe overwrite. identical = skip.
+is_conflict() {
+    local src="$1" dest="$2"
+    [[ ! -e "$dest" ]] && return 1
+    cmp -s "$src" "$dest" && return 1
+    [[ "$dest" -nt "$src" ]] && return 0
+    return 1
+}
+
+# Fixes ownership of a path to OWNER after root writes it.
+fix_repo_ownership() {
+    local path="$1"
+    if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
+        chown -R "${OWNER}:${OWNER}" "$path" 2>/dev/null || true
+    fi
+}
+
+# Copies src to dest, creating parent dirs. For system (root-written) files, fixes ownership to OWNER.
+# Args: src dest is_system (true|false)
+backup_file_to() {
+    local src="$1" dest="$2" is_system="${3:-false}"
+    if [[ "$is_system" == "true" ]]; then
+        mkdir -p "$(dirname "$dest")"
+        cp -a "$src" "$dest"
+        fix_repo_ownership "$dest"
+    else
+        run_as_owner mkdir -p "$(dirname "$dest")"
+        run_as_owner cp -a "$src" "$dest"
     fi
 }
 
@@ -157,7 +189,7 @@ build_allowed_map() {
     local section="$1"
     local -n __allowed_map="$2"
     
-    local RESTORE_CONF="$CONFIGS_DIR/restore.conf"
+    local RESTORE_CONF="$SYNC_MANIFEST"
     if [[ ! -f "$RESTORE_CONF" ]]; then
         return 0
     fi

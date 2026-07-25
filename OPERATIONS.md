@@ -16,6 +16,7 @@ This document provides a quick reference of essential commands for managing the 
   - [3.5 Execution Ordering Rules](#35-execution-ordering-rules)
   - [3.6 Manual Git and GDrive Sync](#36-manual-git-and-gdrive-sync)
   - [3.7 Configuration Maintenance](#37-configuration-maintenance)
+  - [3.8 Keys Vault](#38-keys-vault)
 - [4. Rclone](#4-rclone)
 - [5. System Diagnostics](#5-system-diagnostics)
   - [5.1 Hardware Status (Temps, Fans, Frequency, Power)](#51-hardware-status-temps-fans-frequency-power)
@@ -28,6 +29,12 @@ This document provides a quick reference of essential commands for managing the 
   - [6.3 NVIDIA GPU Specific Configuration](#63-nvidia-gpu-specific-configuration)
 - [7. Firmware](#7-firmware)
   - [7.1 Firmware Management](#71-firmware-management)
+- [8. Package Management](#8-package-management)
+  - [8.1 Basic Package Management](#81-basic-package-management)
+  - [8.2 Search & Inspect](#82-search--inspect)
+  - [8.3 System Audits & File Ownership Queries](#83-system-audits--file-ownership-queries)
+  - [8.4 Flatpak Permissions & Overrides](#84-flatpak-permissions--overrides)
+  - [8.5 DNF Transaction History](#85-dnf-transaction-history)
 
 ---
 
@@ -122,9 +129,9 @@ Run the backup script directly to copy configurations from your live system to t
 user-configs/custom/bin/backup-configs.sh [-f | --force]
 ```
 
-- **Default:** Compares live files with repository files, copying only non-conflicting files.
-- **Force (`-f` or `--force`):** Overwrites repository files with live versions.
-- **Repository Pruning:** Removes untracked files in the repository no longer listed in `restore.conf`.
+- **Default:** Copies live files that are **newer** than the repository copy. The old repository copy is always backed up to `backup/repo/` first (backup log). If the repository copy is **newer** than the live file (conflict), the file is skipped and logged.
+- **Force (`-f` or `--force`):** Also overwrites conflicts (repo newer than live), backing them up to `backup/repo/` first (conflict log).
+- **Repository Pruning:** Removes untracked files in the repository no longer listed in `sync-manifest.conf`, saving them to `backup/repo/` first.
 
 #### 3.4 Restore Script
 
@@ -134,17 +141,18 @@ Run the restore script directly to copy configuration templates from the reposit
 bash framework/scripts/restore-configs.sh --configs [-f | --force]
 ```
 
-- **Default:** Compares repository templates with live files, restoring only non-conflicting files.
-- **Force (`-f` or `--force`):** Overwrites live files with repository templates.
+- **Default:** Copies repository files that are **newer** than the live copy. The old live copy is always backed up to `backup/live/` first (backup log). If the live copy is **newer** than the repository file (conflict), the file is skipped and logged.
+- **Force (`-f` or `--force`):** Also overwrites conflicts (live newer than repo), backing them up to `backup/live/` first (conflict log).
 
 #### 3.5 Execution Ordering Rules
 
 Running the backup and restore operations in sequence has specific outcomes depending on which script is executed first:
 
-- **No-Force Ordering:** Running `backup-configs.sh` and then `restore-configs.sh` (or vice versa) without `--force` results in the second operation being a no-op. Non-conflicting files are synced by the first script, and conflicting files are safely skipped by both.
-- **Force Ordering:** Running `backup-configs.sh --force` followed by `restore-configs.sh --force` (or vice versa) makes the second operation a no-op because the first run ensures that the live and repository states are identical.
-- **Conflict Archives:** The backup directories (`backup/live/` or `backup/repo/`) will contain the overridden versions of the conflicting files based on which script was run first (e.g., if you run the backup script first, the old repository copy is saved in `backup/repo/`).
-- **Overwritten Warnings:** Any backup files saved in `backup/live/` or `backup/repo/` are temporary and will be overwritten on the next run if the same conflict occurs again. Compare and manually merge the changes between your live system files and repository files before running the scripts again to avoid losing the older state.
+- **Conflict definition:** A file is a conflict when the **destination** is newer than the source. Force is required to overwrite a conflict.
+- **Non-conflict overwrite:** When the source is newer, the file is always copied (no force needed) and the destination is backed up first.
+- **No-Force Ordering:** Running backup then restore (or vice versa) without `--force` — non-conflicting files are synced by the first script. The second script then has nothing to do for those files. True conflicts are safely skipped by both.
+- **Force Ordering:** Running either script with `--force` first aligns the live and repository states. The second script becomes a no-op.
+- **Backup Archives:** Files saved to `backup/live/` or `backup/repo/` are overwritten on the next run if the same file is backed up again. Review and merge any important differences before re-running.
 
 #### 3.6 Manual Git and GDrive Sync
 
@@ -179,9 +187,35 @@ sudo bash framework/scripts/verify-setup.sh
 
 **Custom Configurations (`user-configs/custom/`)** — These are user-maintained scripts and custom configurations (e.g., custom aliases, profiles). They are always maintained at the repository level and should be edited inside the repository directory (`user-configs/custom/`), not in the live home folder.
 
-**Restore List (`framework/configs/restore.conf`)** — This is the master list of tracked files. If you want to add new configurations to be backed up or remove old ones from tracking, edit this file at the repository level.
+**Sync Manifest (`framework/configs/sync-manifest.conf`)** — This is the master list of tracked files. If you want to add new configurations to be backed up or remove old ones from tracking, edit this file at the repository level.
+
+**Packages Configuration (`framework/configs/packages.conf`)** — This is the master list of packages to install or uninstall. If you want to add or remove packages from your system configuration, edit this file at the repository level.
 
 **All Other Configurations (Home & System)** — Any other files (such as `.bashrc`, `.config/powerdevilrc`, or system files under `/etc/`) must be updated at their real live paths (e.g., in your home directory or `/etc/`) and **not** inside the repository directory. Once updated on the live system, run the backup script to sync them into the repository.
+
+#### 3.8 Keys Vault
+
+The `keys/` directory is excluded from all automated Git and Google Drive backups by design. `keys-vault.sh` provides a manual, encrypted backup of `keys/` to Google Drive (`/mnt/core/gdrive/backup/security/` by default) using AES-256 encryption. Vault files are self-contained and portable — each includes a plaintext hint visible without decryption.
+
+**Backup** — encrypts `keys/` and writes a timestamped vault to Google Drive:
+
+```shell
+user-configs/custom/bin/keys-vault.sh --backup --hint <text>
+```
+
+**Restore** — decrypts a specific vault back to `keys/`:
+
+```shell
+user-configs/custom/bin/keys-vault.sh --restore --src <path/to/vault.vault>
+```
+
+Key behaviours:
+
+- The hint is displayed **before** the password prompt on restore — no password needed to see it.
+- **No overwrite on either side** — backup quits if the vault file already exists; restore quits if `keys/` already exists at the destination. Remove the target manually first if needed.
+- Default backup destination: `/mnt/core/gdrive/backup/security/keys-TIMESTAMP.vault`
+- Default restore destination: `/mnt/core/os-configs/keys/`
+- Run the script with no arguments to print all available flags and current defaults.
 
 ---
 
@@ -282,3 +316,58 @@ sudo bash framework/scripts/verify-setup.sh
 | `fwupdmgr get-devices` | List devices with firmware info. |
 | `fwupdmgr get-updates` | Check for available firmware updates. |
 | `fwupdmgr update` | Apply available firmware updates. |
+
+---
+
+### 8. Package Management
+
+#### 8.1 Basic Package Management
+
+**Important:** Avoid defaulting to the `-y` auto-accept flag (e.g., `dnf install -y` or `dnf remove -y`). Reviewing the transaction plan helps prevent the accidental removal or modification of critical system dependencies.
+
+| Operation | DNF (System) | RPM (Local Packages) | Flatpak (Sandboxed App) |
+| :--- | :--- | :--- | :--- |
+| **Update Repos** | `sudo dnf check-update` | — | `flatpak update --appstream` |
+| **Install** | `sudo dnf install <pkg>` | `sudo rpm -i <file.rpm>` | `flatpak install <remote> <app_id>` |
+| **Upgrade** | `sudo dnf upgrade` | `sudo rpm -U <file.rpm>` | `flatpak update` |
+| **Remove** | `sudo dnf remove <pkg>` | `sudo rpm -e <pkg>` | `flatpak uninstall <app_id>` |
+| **Autoremove** | `sudo dnf autoremove` | — | `flatpak uninstall --unused` |
+| **Clean Cache** | `sudo dnf clean all` | — | — |
+| **Reinstall** | `sudo dnf reinstall <pkg>` | — | `flatpak install --reinstall <remote> <app_id>` |
+| **Downgrade** | `sudo dnf downgrade <pkg>` | `sudo rpm -U --oldpackage <file.rpm>` | `flatpak update --commit=<hash> <app_id>` |
+
+#### 8.2 Search & Inspect
+
+Use these commands when the exact package name is unknown, or to show descriptions and sizes before modifying files.
+
+| Command | Description |
+| :--- | :--- |
+| `dnf search <query>` | Search DNF package names and summaries. |
+| `dnf info <pkg>` | Show detailed description, size, and version to verify a package before action. |
+| `flatpak search <query>` | Search Flathub or other remotes for matching applications. |
+| `flatpak info <app_id>` | Show detailed description, size, runtime requirements, and licensing info. |
+
+#### 8.3 System Audits & File Ownership Queries
+
+| Command | Description |
+| :--- | :--- |
+| `dnf provides <file>` | Find which package provides a specific system file or command (e.g., `dnf provides /usr/bin/git`). |
+
+#### 8.4 Flatpak Permissions & Overrides
+
+| Command | Description |
+| :--- | :--- |
+| `flatpak info --show-permissions <app_id>` | List permissions requested by the application. |
+| `flatpak override --show <app_id>` | Show current overrides for the application. |
+| `flatpak override --filesystem=<path> <app_id>` | Override filesystem permissions (e.g., `--filesystem=host` or `--filesystem=/mnt/core`). |
+| `flatpak override --reset <app_id>` | Reset all overrides back to default values. |
+
+#### 8.5 DNF Transaction History
+
+| Command | Description |
+| :--- | :--- |
+| `sudo dnf history list` | List past package transactions with IDs, dates, and action summaries. |
+| `sudo dnf history info <id>` | Show detailed package list of a specific transaction. |
+| `sudo dnf history undo <id>` | Undo transaction actions (uninstalls installed packages, reinstalls deleted ones). |
+| `sudo dnf history redo <id>` | Redo/repeat the transaction. |
+| `sudo dnf history rollback <id>` | Revert system state to the point immediately following transaction `<id>`. |
