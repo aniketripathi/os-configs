@@ -28,8 +28,9 @@ check_section_configs() {
 
     for f in $files; do
         [[ -z "$f" ]] && continue
-        local repo_path="${repo_base}/${f}"
-        local live_path="${base_path}/${f}"
+        local clean_f="${f%/}"
+        local repo_path="${repo_base}/${clean_f}"
+        local live_path="${base_path}/${clean_f}"
 
         if [[ "$section" == "keys" && -d "$repo_path" ]]; then
             if [[ ! -d "$live_path" ]]; then
@@ -51,12 +52,12 @@ check_section_configs() {
         for sub_file in "${repo_files[@]}"; do
             local check_repo="$repo_path"
             local check_live="$live_path"
-            local check_label="$f"
+            local check_label="$clean_f"
             if [[ -n "$sub_file" ]]; then
                 local rel_path="${sub_file#./}"
                 check_repo="$repo_path/$rel_path"
                 check_live="$live_path/$rel_path"
-                check_label="$f/$rel_path"
+                check_label="$clean_f/$rel_path"
             fi
 
             local display_path

@@ -67,9 +67,10 @@ backup_section() {
 
     for file in $files; do
         [[ -z "$file" ]] && continue
-        local src="${live_base}/${file}"
-        local dest="${repo_base}/${file}"
-        local rel_repo="${rel_repo_prefix}/${file}"
+        local clean_file="${file%/}"
+        local src="${live_base}/${clean_file}"
+        local dest="${repo_base}/${clean_file}"
+        local rel_repo="${rel_repo_prefix}/${clean_file}"
 
         if [[ ! -e "$src" ]]; then
             if [[ "$section" == "keys" ]]; then

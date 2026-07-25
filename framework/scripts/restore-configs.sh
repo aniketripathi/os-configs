@@ -77,8 +77,9 @@ restore_section() {
     for file in $files; do
         [[ -z "$file" ]] && continue
 
-        local source_path="${repo_base}/${file}"
-        local dest="${live_base}/${file}"
+        local clean_file="${file%/}"
+        local source_path="${repo_base}/${clean_file}"
+        local dest="${live_base}/${clean_file}"
 
         if [[ ! -e "$source_path" ]]; then
             if [[ "$section" == "keys" ]]; then
@@ -101,13 +102,13 @@ restore_section() {
         for sub_file in "${src_files[@]}"; do
             local file_src="$source_path"
             local file_dest="$dest"
-            local rel_file="$file"
+            local rel_file="$clean_file"
 
             if [[ -n "$sub_file" ]]; then
                 local rel_path="${sub_file#./}"
                 file_src="$source_path/$rel_path"
                 file_dest="$dest/$rel_path"
-                rel_file="$file/$rel_path"
+                rel_file="$clean_file/$rel_path"
             fi
 
             # Identical content: skip quietly
@@ -142,13 +143,13 @@ restore_section() {
 
         # SSH-specific permissions applied after all sub-files are restored.
         if [[ "$section" == "keys" ]]; then
-            if [[ "$file" == ".ssh" || "$file" == *"/_ssh" || "$file" == *"/.[Ss][Ss][Hh]" ]]; then
+            if [[ "$clean_file" == ".ssh" || "$clean_file" == *"/_ssh" || "$clean_file" == *"/.[Ss][Ss][Hh]" ]]; then
                 run_as_owner chmod 700 "$dest"
                 run_as_owner find "$dest" -type f -name "id_ed25519*" ! -name "*.pub" -exec chmod 600 {} + 2>/dev/null || true
                 run_as_owner find "$dest" -type f -name "id_ed25519*.pub" -exec chmod 644 {} + 2>/dev/null || true
-            elif [[ "$file" == *"/id_ed25519" ]]; then
+            elif [[ "$clean_file" == *"/id_ed25519" ]]; then
                 run_as_owner chmod 600 "$dest"
-            elif [[ "$file" == *"/id_ed25519.pub" ]]; then
+            elif [[ "$clean_file" == *"/id_ed25519.pub" ]]; then
                 run_as_owner chmod 644 "$dest"
             fi
         fi
