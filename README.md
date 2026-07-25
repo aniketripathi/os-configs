@@ -14,9 +14,8 @@ For a detailed reference of commands and operations, please refer to the [OPERAT
 
 - [1. Key Assumptions](#1-key-assumptions)
   - [1.1 Directory Layout](#11-directory-layout)
-  - [1.2 Tag Conventions](#12-tag-conventions)
-  - [1.3 Permissions & Ownership Policy](#13-permissions--ownership-policy)
-- [2. Partition Setup & Formatting [CAUTION, HARDWARE]](#2-partition-setup--formatting-caution-hardware)
+  - [1.2 Permissions & Ownership Policy](#12-permissions--ownership-policy)
+- [2. Partition Setup & Formatting](#2-partition-setup--formatting)
   - [2.1 Check existing disks and free space](#21-check-existing-disks-and-free-space)
   - [2.2 Format and Label Partitions](#22-format-and-label-partitions)
   - [2.3 Temporary Mounts for Repository Setup](#23-temporary-mounts-for-repository-setup)
@@ -24,19 +23,19 @@ For a detailed reference of commands and operations, please refer to the [OPERAT
   - [3.1 SSH Setup](#31-ssh-setup)
   - [3.2 Authenticate GitHub CLI & Clone Repository](#32-authenticate-github-cli--clone-repository)
   - [3.3 SSH startup loading](#33-ssh-startup-loading)
-- [4. Default Configuration [FIRST-TIME-BACKUP, FIRST-TIME-RESTORE]](#4-default-configuration-first-time-backup-first-time-restore)
+- [4. Default Configuration](#4-default-configuration)
   - [4.1 Default config variables and keys](#41-default-config-variables-and-keys)
   - [4.2 Initializing Default Configurations](#42-initializing-default-configurations)
 - [5. Restore Configurations & Desktop Settings](#5-restore-configurations--desktop-settings)
-- [6. Set Up BTRFS & Snapper [CAUTION, FEDORA]](#6-set-up-btrfs--snapper-caution-fedora)
+- [6. Set Up BTRFS & Snapper](#6-set-up-btrfs--snapper)
   - [6.1 Initialize Post-Installation Snapshot](#61-initialize-post-installation-snapshot)
-- [7. Configure Google Drive Mount (Rclone) [CAUTION]](#7-configure-google-drive-mount-rclone-caution)
+- [7. Configure Google Drive Mount (Rclone)](#7-configure-google-drive-mount-rclone)
   - [7.1 Configure Rclone Google Drive](#71-configure-rclone-google-drive)
 - [8. Enable Automation Background Timers](#8-enable-automation-background-timers)
   - [8.1 Enable Background Timers](#81-enable-background-timers)
-- [9. Setting up Package Manager [FEDORA]](#9-setting-up-package-manager-fedora)
+- [9. Setting up Package Manager](#9-setting-up-package-manager)
 - [10. GPU Setup & Secure Boot Key Enrollment](#10-gpu-setup--secure-boot-key-enrollment)
-  - [10.1 Install GPU Drivers [HARDWARE]](#101-install-gpu-drivers-hardware)
+  - [10.1 Install GPU Drivers](#101-install-gpu-drivers)
   - [10.2 Secure Boot](#102-secure-boot)
 - [11. Application Installations & Customizations](#11-application-installations--customizations)
   - [11.1 Using DNF and Flatpak Packages](#111-using-dnf-and-flatpak-packages)
@@ -76,15 +75,7 @@ os-configs/
 
 ℹ️ Note: The framework will use the default directory structure and partition layout across most configurations, especially before cloning the repository. If you prefer custom labels and directory structures, update the commands accordingly.
 
-#### 1.2 Tag Conventions
-
-- `[CAUTION]`: Affects system boot partition flags, mounts, or secure boot settings. Pay special attention when performing actions in this category.
-- `[HARDWARE]`: Section is tailored for specific hardware.
-- `[FEDORA]`: Section specifically associated with the Fedora KDE Plasma setup.
-- `[FIRST-TIME-BACKUP]`: Designed for the initial backup setup.
-- `[FIRST-TIME-RESTORE]`: Designed for the initial restoration setup.
-
-#### 1.3 Permissions & Ownership Policy
+#### 1.2 Permissions & Ownership Policy
 
 To maintain a secure and consistent environment, the framework enforces file creation permission policies using a `umask 027` configuration:
 
@@ -93,7 +84,7 @@ To maintain a secure and consistent environment, the framework enforces file cre
 
 ---
 
-### 2. Partition Setup & Formatting [CAUTION, HARDWARE]
+### 2. Partition Setup & Formatting
 
 Format the disk and create partitions based on the number and size of your disks. The goal is to create three partitions (ext4) with labels `core`, `library`, and `temp`. If you only formatted your root partition during installation and your other data partitions exist, skip this step. It is **recommended** to use a GUI like `KDE Partition Manager`.
 
@@ -226,7 +217,7 @@ sudo dnf install -y --skip-unavailable crudini git gh ksshaskpass 7zip rclone sn
   install -D -t ~/.ssh/ /mnt/core/os-configs/keys/.ssh/id_ed25519*
   ```
 
-- **Scenario B - [FIRST-TIME-RESTORE]**: If you do not have your original SSH keys or have never configured them, generate a new SSH key. The SSH key comment will default to `username@hostname`. Enter a passphrase and save it for future reference.
+- **Scenario B - First-time Restore**: If you do not have your original SSH keys or have never configured them, generate a new SSH key. The SSH key comment will default to `username@hostname`. Enter a passphrase and save it for future reference.
 
   ```shell
   ssh-keygen -t ed25519 -C "$(whoami)@$(hostname)"
@@ -291,7 +282,7 @@ SSH_ASKPASS_REQUIRE=prefer ssh-add ~/.ssh/id_ed25519
 
 ---
 
-### 4. Default Configuration [FIRST-TIME-BACKUP, FIRST-TIME-RESTORE]
+### 4. Default Configuration
 
 If you are using this framework for the first time, you may not have any customized configurations. The framework provides some default templates for the configurations to get you started.
 
@@ -361,7 +352,7 @@ bash /mnt/core/os-configs/framework/scripts/restore-configs.sh --all [-f | --for
 
 ---
 
-### 6. Set Up BTRFS & Snapper [CAUTION, FEDORA]
+### 6. Set Up BTRFS & Snapper
 
 The Snapper setup script generates root snapshot rules, optimizes timeline retention limits, and configures GRUB boot submenus. For detailed setup instructions and configurations, see the [Snapper Arch Wiki](https://wiki.archlinux.org/title/Snapper).
 
@@ -391,7 +382,7 @@ sudo snapper -c root list
 
 ---
 
-### 7. Configure Google Drive Mount (Rclone) [CAUTION]
+### 7. Configure Google Drive Mount (Rclone)
 
 #### 7.1 Configure Rclone Google Drive
 
@@ -460,7 +451,7 @@ Reboot: **PERFORM REBOOT (Verifies Bootloader Menu, Snapshots, and Active Servic
 
 ---
 
-### 9. Setting up Package Manager [FEDORA]
+### 9. Setting up Package Manager
 
 The package manager setup script updates system packages, deploys optimized DNF settings, and enables RPM Fusion and Terra repositories:
 
@@ -472,7 +463,7 @@ sudo bash /mnt/core/os-configs/framework/scripts/dnf-setup.sh
 
 ### 10. GPU Setup & Secure Boot Key Enrollment
 
-#### 10.1 Install GPU Drivers [HARDWARE]
+#### 10.1 Install GPU Drivers
 
 Check your GPU:
 
@@ -515,7 +506,7 @@ sudo mokutil --import /etc/pki/akmods/certs/public_key.der
 
 Enter a temporary password when prompted.
 
-⚠️ [CAUTION] DO NOT SKIP THE BLUE MOK SCREEN ON REBOOT!
+⚠️ DO NOT SKIP THE BLUE MOK SCREEN ON REBOOT!
 
 1. When the laptop restarts, it will show a blue screen titled "Shim UEFI key management" or "MOK Manager".
 2. You must select "Enroll MOK" -> "Continue" -> "Yes" -> enter the temporary password you defined above.
