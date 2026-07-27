@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=AB Download Manager
+Exec="/mnt/library/apps/ABDownloadManager/bin/ABDownloadManager" --background
+Icon=/mnt/library/apps/ABDownloadManager/lib/ABDownloadManager.png
+Terminal=false
+NoDisplay=true
