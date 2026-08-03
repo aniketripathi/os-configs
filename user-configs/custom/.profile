@@ -35,4 +35,4 @@ os-configs-gdrive-logs() {
 # General Status Alias
 alias os-configs-status='systemctl --user list-timers --all "os-configs-*"'
 
-export CUSTOM_PROFILE_INITIALIZED="yes"
+CUSTOM_PROFILE_INITIALIZED="yes"
