@@ -157,12 +157,53 @@ validate_mounts() {
 
 validate_git_repository() {
     print_heading "[2] Git Repository Verification"
-    if git -C "$OS_CONFIGS" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    if git_cmd -C "$OS_CONFIGS" rev-parse --is-inside-work-tree > /dev/null 2>&1; then
         report_ok "$OS_CONFIGS is a valid git repository."
-        if git -C "$OS_CONFIGS" remote -v | grep -q "origin"; then
+
+        if git_cmd -C "$OS_CONFIGS" remote -v | grep -q "origin"; then
             report_ok "Git remote 'origin' is configured."
         else
             report_missing "Git remote 'origin' is NOT configured."
+        fi
+
+        # Uncommitted changes — categorised as new / updated / deleted
+        local uncommitted new_count=0 updated_count=0 deleted_count=0
+        uncommitted=$(git_cmd -C "$OS_CONFIGS" status --porcelain 2>/dev/null)
+        while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            local x="${line:0:1}" y="${line:1:1}"
+            if [[ "$x$y" == "??" || "$x" == "A" ]]; then
+                (( new_count++ )) || true
+            elif [[ "$x" == "D" || "$y" == "D" ]]; then
+                (( deleted_count++ )) || true
+            else
+                (( updated_count++ )) || true
+            fi
+        done <<< "$uncommitted"
+
+        if (( new_count + updated_count + deleted_count > 0 )); then
+            report_different "Repository has uncommitted changes ($new_count new, $updated_count updated, $deleted_count deleted)."
+        else
+            report_ok "Working tree is clean, no uncommitted changes."
+        fi
+
+        # Ahead / behind remote
+        local branch ahead behind
+        branch=$(git_cmd -C "$OS_CONFIGS" rev-parse --abbrev-ref HEAD 2>/dev/null || true)
+        if git_cmd -C "$OS_CONFIGS" fetch origin --quiet 2>/dev/null; then
+            ahead=$(git_cmd -C "$OS_CONFIGS" rev-list --count "origin/${branch}..HEAD" 2>/dev/null || echo 0)
+            behind=$(git_cmd -C "$OS_CONFIGS" rev-list --count "HEAD..origin/${branch}" 2>/dev/null || echo 0)
+            if [[ "$ahead" -gt 0 && "$behind" -gt 0 ]]; then
+                report_missing "Branch '$branch' has diverged: $ahead ahead, $behind behind remote."
+            elif [[ "$ahead" -gt 0 ]]; then
+                report_missing "Local is $ahead commit(s) ahead of remote (unpushed)."
+            elif [[ "$behind" -gt 0 ]]; then
+                report_missing "Remote is $behind commit(s) ahead of local (not pulled)."
+            else
+                report_ok "Branch '$branch' is in sync with remote."
+            fi
+        else
+            report_skip "Could not reach remote to check ahead/behind status."
         fi
     else
         report_missing "$OS_CONFIGS is NOT a valid git repository."

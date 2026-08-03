@@ -54,7 +54,7 @@ run_as_owner() {
 # Run a git command as the standard user if currently running as root
 git_cmd() {
     if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
-        sudo -u "$OWNER" git "$@"
+        sudo -u "$OWNER" SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}" git "$@"
     else
         git "$@"
     fi
@@ -76,6 +76,12 @@ report_missing() {
 report_skip() {
     echo -e "\e[33m[SKIP]\e[0m $1"
     skip_count=$((skip_count + 1))
+}
+
+# Common reporting helpers
+report_different() {
+    echo -e "\e[33m[DIFFERENT]\e[0m $1"
+    missing_count=$((missing_count + 1))
 }
 
 print_heading() {
