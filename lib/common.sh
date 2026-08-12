@@ -45,16 +45,29 @@ require_root() {
 # Run a command as the standard user if currently running as root
 run_as_owner() {
     if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
-        sudo -u "$OWNER" "$@"
+        sudo -u "$OWNER" HOME="${USER_HOME:-$HOME}" "$@"
     else
         "$@"
     fi
 }
 
+# Helper to resolve active SSH_AUTH_SOCK for standard owner
+get_ssh_auth_sock() {
+    local auth_sock="${SSH_AUTH_SOCK:-}"
+    if [[ -z "$auth_sock" || ! -S "$auth_sock" ]]; then
+        local user_uid
+        user_uid=$(id -u "${OWNER:-$USER}" 2>/dev/null || echo "1000")
+        auth_sock=$(find "/tmp" "/run/user/$user_uid" -type s \( -name "agent.*" -o -name "ssh" -o -name "*ssh-agent*" \) -user "${OWNER:-$USER}" 2>/dev/null | head -n 1 || true)
+    fi
+    echo "$auth_sock"
+}
+
 # Run a git command as the standard user if currently running as root
 git_cmd() {
     if [[ $EUID -eq 0 && -n "${OWNER:-}" && "$OWNER" != "root" ]]; then
-        sudo -u "$OWNER" SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}" git "$@"
+        local auth_sock
+        auth_sock=$(get_ssh_auth_sock)
+        sudo -u "$OWNER" HOME="${USER_HOME:-$HOME}" SSH_AUTH_SOCK="$auth_sock" git "$@"
     else
         git "$@"
     fi

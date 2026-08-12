@@ -50,7 +50,6 @@ Below is a summary of the key tools and utilities referenced in this guide:
 | `pgrep` | Command-line utility to search for active processes by name. |
 | `systemctl` | Systemd utility to query and control the state of system services and mounts. |
 | `fwupdmgr` | Command-line client for the fwupd daemon to refresh and update system firmware. |
-| `switcherooctl` | Utility to list available GPUs and launch applications using specific graphics cards. |
 | `sensors` | Hardware monitoring tool (lm_sensors) for real-time temperatures, voltages, and fan speeds. |
 | `watch` | Tool to run commands periodically and view outputs in real-time. |
 | `cpupower` | Tool to view and configure processor power states and governor settings. |
@@ -282,10 +281,9 @@ Key behaviours:
 
 | Command | Description |
 | :--- | :--- |
-| `switcherooctl list` | List available GPUs. |
-| `switcherooctl launch <command>` | Launch an app on the discrete (NVIDIA) GPU. |
-| `DRI_PRIME=1 <command>` | Force a command onto the discrete GPU (PRIME offload). |
-| `DRI_PRIME=0 <command>` | Force a command onto the integrated (AMD) GPU. |
+| `nvidia-run <command>` | Launch an application using the discrete NVIDIA GPU (`__NV_PRIME_RENDER_OFFLOAD=1`). |
+| `amd-run <command>` | Launch an application using the integrated AMD GPU (`DRI_PRIME=0`). |
+| `DRI_PRIME=1 <command>` | Force a command onto the discrete GPU via Mesa/Zink offload. |
 
 #### 6.2 Power Profiles and CPU Scaling
 

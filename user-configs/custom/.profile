@@ -35,4 +35,8 @@ os-configs-gdrive-logs() {
 # General Status Alias
 alias os-configs-status='systemctl --user list-timers --all "os-configs-*"'
 
+# GPU Offload Aliases
+alias nvidia-run='env __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only'
+alias amd-run='env DRI_PRIME=0'
+
 CUSTOM_PROFILE_INITIALIZED="yes"

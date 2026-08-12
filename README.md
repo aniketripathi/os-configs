@@ -536,7 +536,7 @@ sudo bash /mnt/core/os-configs/framework/scripts/install-packages.sh --daily
 
 Alternative flags for the package installation script:
 
-- `--required`: Installs only core required utilities (git, gh, rclone, crudini, switcheroo, etc.).
+- `--required`: Installs only core required utilities (git, gh, rclone, crudini, etc.).
 - `--daily` (Default): Installs core required utilities and daily-driver applications (web browser, office suite, media players, etc.).
 - `--dev`: Installs core required utilities and development tools (like VS Code, DBeaver, MongoDB Compass).
 - `--all`: Installs all categories combined (required, daily-driver, and development).

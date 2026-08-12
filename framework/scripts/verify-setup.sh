@@ -295,12 +295,8 @@ validate_restore_and_desktop() {
     $has_unallowed || report_ok "Repository folders are clean."
     echo ""
 
-    local auth_sock="${SSH_AUTH_SOCK:-}"
-    if [[ -z "$auth_sock" ]]; then
-        local user_uid
-        user_uid=$(id -u "$OWNER" 2>/dev/null || echo "1000")
-        auth_sock=$(find "/tmp" "/run/user/$user_uid" -type s \( -name "agent.*" -o -name "ssh" -o -name "*ssh-agent*" \) -user "$OWNER" 2>/dev/null | head -n 1 || true)
-    fi
+    local auth_sock
+    auth_sock=$(get_ssh_auth_sock)
 
     if [[ -n "$auth_sock" && -S "$auth_sock" ]]; then
         local key_list exit_code=0
