@@ -13,6 +13,10 @@ cd "$OS_CONFIGS" || exit 1
 # Check that 'origin' remote exists before pushing
 git_cmd remote get-url origin >/dev/null 2>&1 || { echo "Error: git remote 'origin' not configured." >&2; exit 1; }
 
+# Abort early if no SSH keys are loaded in the agent
+ssh-add -l >/dev/null 2>&1 || { echo "Error: No SSH keys loaded in agent. Is KWallet unlocked?" >&2; exit 1; }
+
+
 if [[ -n "$(git_cmd status --porcelain)" ]]; then
     echo "Changes detected in repository. Committing changes..."
     git_cmd add -A
