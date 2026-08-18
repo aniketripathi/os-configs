@@ -7,6 +7,7 @@ Wants=network-online.target
 Type=oneshot
 StandardOutput=journal
 StandardError=journal
+ExecStartPre=/bin/sleep 60
 ExecStart=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/backup-configs.sh
 ExecStartPost=/bin/bash /mnt/core/os-configs/user-configs/custom/bin/git-autopush.sh
 
