@@ -1,0 +1,116 @@
+============================================================
+ DYNAMIC CPU BENCHMARK & TELEMETRY
+ Sunday 30 August 2026 03:55:22 PM IST
+ CPU  : AMD Ryzen 5 5600H with Radeon Graphics (12 Threads)
+ GPU  : NVIDIA GeForce RTX 3050 Laptop GPU
+ Host : Linux-PC | Kernel: 7.1.8-200.fc44.x86_64
+ Mode : performance
+------------------------------------------------------------
+ Tests Scheduled: 5
+============================================================
+
+⏳ Cooldown 60s before: Target: 0MHz
+   End of cooldown — CPU: 39.8°C (was: 47.9°C)
+
+============================================================
+ TEST: 3300 MHz (No Boost)
+============================================================
+   Pre-test — CPU: 40.1°C | Freq: 1316 MHz
+   Starting 7zip benchmark (120s)...
+
+   ┌─ Start Temp    : 40.1°C
+   ├─ Peak Temp     : 65.5°C
+   ├─ End Temp      : 62.2°C
+   ├─ Peak Pkg Pwr  : 20.29W
+   ├─ Avg Pkg Pwr   : 18.22W
+   ├─ 7z Rating     : 42686 MIPS
+   └─ Efficiency    : 2342.8 MIPS/W
+
+⏳ Cooldown 60s before: Target: 3500MHz
+   End of cooldown — CPU: 40.8°C (was: 62.1°C)
+
+============================================================
+ TEST: 3500 MHz (Cap)
+============================================================
+   Pre-test — CPU: 40.6°C | Freq: 2003 MHz
+   Starting 7zip benchmark (120s)...
+
+   ┌─ Start Temp    : 40.6°C
+   ├─ Peak Temp     : 69.2°C
+   ├─ End Temp      : 66.4°C
+   ├─ Peak Pkg Pwr  : 25.10W
+   ├─ Avg Pkg Pwr   : 21.32W
+   ├─ 7z Rating     : 42701 MIPS
+   └─ Efficiency    : 2002.8 MIPS/W
+
+⏳ Cooldown 60s before: Target: 3750MHz
+   End of cooldown — CPU: 41.0°C (was: 66.5°C)
+
+============================================================
+ TEST: 3750 MHz (Cap)
+============================================================
+   Pre-test — CPU: 47.8°C | Freq: 2786 MHz
+   Starting 7zip benchmark (120s)...
+
+   ┌─ Start Temp    : 47.9°C
+   ├─ Peak Temp     : 80.0°C
+   ├─ End Temp      : 79.0°C
+   ├─ Peak Pkg Pwr  : 31.27W
+   ├─ Avg Pkg Pwr   : 26.96W
+   ├─ 7z Rating     : 45794 MIPS
+   └─ Efficiency    : 1698.5 MIPS/W
+
+⏳ Cooldown 60s before: Target: 4000MHz
+   End of cooldown — CPU: 41.2°C (was: 79.0°C)
+
+============================================================
+ TEST: 4000 MHz (Cap)
+============================================================
+   Pre-test — CPU: 41.0°C | Freq: 2185 MHz
+   Starting 7zip benchmark (120s)...
+
+   ┌─ Start Temp    : 41.0°C
+   ├─ Peak Temp     : 95.9°C
+   ├─ End Temp      : 95.6°C
+   ├─ Peak Pkg Pwr  : 41.64W
+   ├─ Avg Pkg Pwr   : 36.36W
+   ├─ 7z Rating     : 48174 MIPS
+   └─ Efficiency    : 1324.9 MIPS/W
+
+⏳ Cooldown 60s before: Target: 4280MHz
+   End of cooldown — CPU: 41.8°C (was: 95.6°C)
+
+============================================================
+ TEST: 4280 MHz (Full Boost)
+============================================================
+   Pre-test — CPU: 41.5°C | Freq: 1956 MHz
+   Starting 7zip benchmark (120s)...
+
+   ┌─ Start Temp    : 41.5°C
+   ├─ Peak Temp     : 98.2°C
+   ├─ End Temp      : 97.8°C
+   ├─ Peak Pkg Pwr  : 49.00W
+   ├─ Avg Pkg Pwr   : 41.23W
+   ├─ 7z Rating     : 50456 MIPS
+   └─ Efficiency    : 1223.7 MIPS/W
+
+============================================================
+ SUMMARY
+============================================================
+ Test                           Start°C   Peak°C    PeakPwr    MIPS       MIPS/W    
+ ----                           -------    ------     -------    ----       ------    
+ 3300 MHz (No Boost)            40.1°C     65.5°C     20.29W     42686      2342.8    
+ 3500 MHz (Cap)                 40.6°C     69.2°C     25.10W     42701      2002.8    
+ 3750 MHz (Cap)                 47.9°C     80.0°C     31.27W     45794      1698.5    
+ 4000 MHz (Cap)                 41.0°C     95.9°C     41.64W     48174      1324.9    
+ 4280 MHz (Full Boost)          41.5°C     98.2°C     49.00W     50456      1223.7    
+
+✅ ALL BENCHMARKS COMPLETED SUCCESSFULLY.
+============================================================
+ Data saved to:
+ 📄 Log: /tmp/custom_cpu_bench_results.txt
+ 📊 CSV: /tmp/custom_cpu_bench_data.csv
+============================================================
+
+[Restore] Resetting to original state...
+[Restore] ✅ System restored.

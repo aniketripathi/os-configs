@@ -1,0 +1,30 @@
+# ==============================================================================
+# Power Profile Definitions (Declarative Hardware & Thermal Configurations)
+# ==============================================================================
+# Valid configuration parameters and available choices:
+#   acpi  : low-power, balanced, performance
+#           (query live: cat /sys/firmware/acpi/platform_profile_choices)
+#   freq  : Target clock ceiling (e.g. 3300MHz, 3500MHz, 3750MHz)
+#           (hardware limits: base clock to max boost)
+#   boost : 0 (Disabled / base clock floor), 1 (Enabled / dynamic scaling)
+#   epp   : power, balance_power, balance_performance, performance
+#           (query live: cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_available_preferences)
+# ==============================================================================
+
+[quiet]
+acpi = low-power
+freq = 3300MHz
+boost = 0
+epp = power
+
+[balanced]
+acpi = balanced
+freq = 3500MHz
+boost = 1
+epp = balance_performance
+
+[performance]
+acpi = performance
+freq = 3750MHz
+boost = 1
+epp = balance_performance

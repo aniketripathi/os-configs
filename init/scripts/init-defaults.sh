@@ -29,6 +29,7 @@ if [[ "${1:-}" == "--all" || -z "${1:-}" ]]; then
     generate "dnf.conf.default" "$SYSTEM_CONFIGS/dnf/dnf.conf"
     generate "snapper-root.default" "$SYSTEM_CONFIGS/snapper/configs/root"
     generate "powerdevil.default" "$HOME_CONFIGS/.config/powerdevilrc"
+    generate "power-profiles.conf.default" "$CUSTOM_CONFIGS/power-profiles.conf"
     generate "identity.env.default" "$KEYS_DIR/identity.env"
     exit 0
 fi
@@ -40,7 +41,10 @@ for arg in "$@"; do
         --profile)  generate "profile.default" "$CUSTOM_CONFIGS/.profile" ;;
         --dnf)      generate "dnf.conf.default" "$SYSTEM_CONFIGS/dnf/dnf.conf" ;;
         --snapper)  generate "snapper-root.default" "$SYSTEM_CONFIGS/snapper/configs/root" ;;
-        --power)    generate "powerdevil.default" "$HOME_CONFIGS/.config/powerdevilrc" ;;
+        --power)
+            generate "powerdevil.default" "$HOME_CONFIGS/.config/powerdevilrc"
+            generate "power-profiles.conf.default" "$CUSTOM_CONFIGS/power-profiles.conf"
+            ;;
         --identity) generate "identity.env.default" "$KEYS_DIR/identity.env" ;;
         *)
             echo "Unknown flag: $arg" >&2

@@ -27,6 +27,7 @@ This document provides a quick reference of essential commands for managing the 
   - [6.1 GPU Switching and Offloading](#61-gpu-switching-and-offloading)
   - [6.2 Power Profiles and CPU Scaling](#62-power-profiles-and-cpu-scaling)
   - [6.3 NVIDIA GPU Specific Configuration](#63-nvidia-gpu-specific-configuration)
+  - [6.4 CPU Benchmarking and Dynamic Frequency Telemetry](#64-cpu-benchmarking-and-dynamic-frequency-telemetry)
 - [7. Firmware](#7-firmware)
   - [7.1 Firmware Management](#71-firmware-management)
 - [8. Package Management](#8-package-management)
@@ -282,17 +283,21 @@ Key behaviours:
 | Command | Description |
 | :--- | :--- |
 | `nvidia-run <command>` | Launch an application using the discrete NVIDIA GPU (`__NV_PRIME_RENDER_OFFLOAD=1`). |
-| `amd-run <command>` | Launch an application using the integrated AMD GPU (`DRI_PRIME=0`). |
 | `DRI_PRIME=1 <command>` | Force a command onto the discrete GPU via Mesa/Zink offload. |
 
 #### 6.2 Power Profiles and CPU Scaling
 
-| Command | Description |
-| :--- | :--- |
-| `powerprofilesctl list` | List available power profiles. |
-| `powerprofilesctl set <power-saver` \| `balanced` \| `performance>` | Switch active power profile. |
-| `sudo cpupower frequency-set -g <governor>` | Set CPU scaling governor. |
-| `sudo cpupower frequency-set -d <min> -u <max>` | Set CPU min/max frequency (e.g. `-d 800MHz -u 4200MHz`). |
+Power profiles are defined declaratively in `user-configs/custom/power-profiles.conf` and applied via the `power-profile.sh` engine. Profile switches require root privileges (handled automatically by the `mode-*` aliases with `sudo`).
+
+| Command / Alias | Sudo Required? | Description |
+| :--- | :--- | :--- |
+| `mode-quiet` | Yes (`sudo`) | Switch to Quiet Profile (`low-power` ACPI, 3300 MHz base clock, boost off, power EPP). |
+| `mode-balanced` | Yes (`sudo`) | Switch to Balanced Profile (`balanced` ACPI, 3500 MHz, boost enabled, balance_performance EPP). |
+| `mode-performance` | Yes (`sudo`) | Switch to Performance Profile (`performance` ACPI, 3750 MHz sweet spot, aggressive fan curve). |
+| `mode-status` | No | Display detailed multi-aspect status, active values, hardware limits, and available choices. |
+| `power-profile.sh status` | No | Direct CLI command to inspect current power profile status and available hardware options. |
+| `sudo power-profile.sh <quiet\|balanced\|performance>` | Yes | Direct CLI command to switch power profile and display transition details. |
+| `sudo power-profile.sh restore` | Yes | Restore last-saved profile from `~/.local/state/os-configs/power-profile.state` (or auto AC/Battery). |
 
 #### 6.3 NVIDIA GPU Specific Configuration
 
@@ -301,6 +306,19 @@ Key behaviours:
 | `sudo nvidia-smi -lgc <min,max>` | Lock NVIDIA GPU clock to a min,max range. |
 | `sudo nvidia-smi -rgc` | Reset NVIDIA GPU clock to default. |
 | `sudo nvidia-smi -pl <watts>` | Set NVIDIA GPU power limit. |
+
+#### 6.4 CPU Benchmarking and Dynamic Frequency Telemetry
+
+A dedicated, universal benchmarking and telemetry tool is available at `benchmark/cpu_bench.sh`.
+
+- **Dynamic Frequency Stepping:** The script automatically detects the CPU base clock and maximum boost frequency at runtime. Because boost headroom varies across processors, it dynamically distributes the boost headroom into 4 proportional increments (+25%, +50%, +75%, +100% boost) to measure performance scaling across the full V/F curve.
+- **Metrics Recorded:** Real-time polling of CPU temperature (`Tctl` / `Package id 0`), Package Power (`intel-rapl`), Core Power, CPU Load %, Average Frequency (MHz), 7-Zip MIPS score, and overall Power Efficiency (MIPS/Watt).
+
+| Command | Description |
+| :--- | :--- |
+| `sudo bash /mnt/core/os-configs/benchmark/cpu_bench.sh` | Run full automated benchmark suite (saves to `benchmark/results/cpu_bench_results.txt` and `.csv`). |
+| `sudo bash /mnt/core/os-configs/benchmark/cpu_bench.sh -f <name>` | Run benchmark suite with custom name (saves to `benchmark/results/cpu_<name>_results.txt` and `.csv`). |
+| `cat /mnt/core/os-configs/benchmark/results/cpu_bench_results.txt` | View baseline benchmark summary report and thermal/efficiency table. |
 
 ---
 

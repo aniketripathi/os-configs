@@ -51,27 +51,32 @@ For a detailed reference of commands and operations, please refer to the [OPERAT
 
 ```text
 os-configs/
-├── lib/
-│   └── common.sh
 ├── framework/
 │   ├── scripts/
 │   └── configs/
-├── init/
+├── user-configs/
+│   ├── custom/
+│   │   └── bin/
+│   ├── home/
+│   └── system/
 ├── keys/
-└── user-configs/
-    ├── custom/
-    │   └── bin/
-    ├── home/
-    └── system/
+├── init/
+├── lib/
+│   └── common.sh
+└── benchmark/
+    ├── cpu_bench.sh
+    └── results/
 ```
 
 - **framework** - Framework scripts and configuration files (including the file synchronization list `sync-manifest.conf` and packages list `packages.conf`)
-- **init** - Default templates and configurations for first-time setup
-- **keys** - Sensitive information. Never commit these to Git.
 - **user-configs** - User and system dotfiles
   - **custom** - User-maintained custom dotfiles
   - **home** - Dotfiles associated with the home directory
   - **system** - Dotfiles associated with the root directory (`/etc`)
+- **keys** - Sensitive information. Never commit these to Git.
+- **init** - Default templates and configurations for first-time setup
+- **lib** - Shared helper libraries (e.g. `common.sh`)
+- **benchmark** - CPU benchmarking suite (`cpu_bench.sh`) and historical telemetry results (`results/`)
 
 ℹ️ Note: The framework will use the default directory structure and partition layout across most configurations, especially before cloning the repository. If you prefer custom labels and directory structures, update the commands accordingly.
 
@@ -332,8 +337,31 @@ Alternative flags for the initialization script:
 - `--profile`: Generates `user-configs/custom/.profile`.
 - `--dnf`: Generates `user-configs/system/dnf/dnf.conf`.
 - `--snapper`: Generates `user-configs/system/snapper/configs/root`.
-- `--power`: Generates `user-configs/home/.config/powerdevilrc`.
+- `--power`: Generates `user-configs/home/.config/powerdevilrc` and `user-configs/custom/power-profiles.conf`.
 - `--identity`: Generates `keys/identity.env`.
+
+#### 4.3 Customizing Power Profiles for Machine Specs
+
+If you are deploying this framework onto a different machine or updating hardware, customize `user-configs/custom/power-profiles.conf` to match your processor's specific base clocks, boost limits, and thermal characteristics:
+
+1. **Query Hardware Frequency & Mode Capabilities**:
+
+    ```shell
+    # Check hardware clock limits
+    cpupower frequency-info
+    cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
+
+    # Check available ACPI platform profile choices
+    cat /sys/firmware/acpi/platform_profile_choices
+
+    # Check supported EPP energy preferences
+    cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_available_preferences
+    ```
+
+2. **Tune `power-profiles.conf` Parameters**:
+    - **Quiet (`QUIET_*`)**: Set frequency to hardware base clock (e.g. `3300MHz`), boost `0`, and EPP `power` for silent running and maximum battery endurance.
+    - **Balanced (`BALANCED_*`)**: Set frequency to base + ~20–30% boost headroom (e.g. `3500MHz`), boost `1`, and EPP `balance_performance` for instant desktop responsiveness.
+    - **Performance (`PERFORMANCE_*`)**: Set frequency to the optimal V/F efficiency sweet spot (e.g. `3750MHz`, identified via `benchmark/cpu_bench.sh`) to prevent thermal throttling under sustained gaming and compilation loads.
 
 ---
 
@@ -436,13 +464,13 @@ The background automation framework consists of three distinct operations:
 Once your configuration files are restored and your shell environment is reloaded (which registers the custom command aliases), you can easily activate the background timers. Both timers automatically run the **Backup** operation first to capture the latest live system changes before performing their respective upload/push task:
 
 - **Sync Automation (Backup + Git Commit & Push)**: Activate the weekly Git synchronization timer.
-  
+
   ```shell
   os-configs-sync-enable
   ```
 
 - **Cloud Backup Automation (Backup + GDrive Sync)**: Activate the weekly Google Drive backup timer.
-  
+
   ```shell
   os-configs-gdrive-enable
   ```

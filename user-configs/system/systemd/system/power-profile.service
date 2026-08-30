@@ -1,0 +1,12 @@
+[Unit]
+Description=Restore User Power Profile on Startup
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/mnt/core/os-configs/user-configs/custom/bin/power-profile.sh restore
+TimeoutSec=10s
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
