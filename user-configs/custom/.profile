@@ -39,4 +39,9 @@ alias os-configs-status='systemctl --user list-timers --all "os-configs-*"'
 alias nvidia-run='env __NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only'
 alias amd-run='env DRI_PRIME=0'
 
+# Disable PackageKit command-not-found search delay on mistyped commands
+unset -f command_not_found_handle 2>/dev/null
+unset -f command_not_found_handler 2>/dev/null
+
 CUSTOM_PROFILE_INITIALIZED="yes"
+
