@@ -1,115 +1,115 @@
 ============================================================
  DYNAMIC CPU BENCHMARK & TELEMETRY
- Sunday 30 August 2026 03:55:22 PM IST
+ Sunday 30 August 2026 09:51:09 PM IST
  CPU  : AMD Ryzen 5 5600H with Radeon Graphics (12 Threads)
  GPU  : NVIDIA GeForce RTX 3050 Laptop GPU
  Host : Linux-PC | Kernel: 7.1.8-200.fc44.x86_64
  Mode : performance
 ------------------------------------------------------------
- Tests Scheduled: 5
+ Tests Scheduled: 5 Targets (3300 3550 3800 4050 4281 MHz)
 ============================================================
 
-⏳ Cooldown 60s before: Target: 0MHz
-   End of cooldown — CPU: 39.8°C (was: 47.9°C)
+⏳ Cooldown 60s before: Target: 3300MHz (No Boost)
+   End of cooldown — CPU: 51.0°C (was: 51.6°C)
 
 ============================================================
  TEST: 3300 MHz (No Boost)
 ============================================================
-   Pre-test — CPU: 40.1°C | Freq: 1316 MHz
+   Pre-test — CPU: 49.8°C | Freq: 2396 MHz
    Starting 7zip benchmark (120s)...
 
-   ┌─ Start Temp    : 40.1°C
-   ├─ Peak Temp     : 65.5°C
-   ├─ End Temp      : 62.2°C
-   ├─ Peak Pkg Pwr  : 20.29W
-   ├─ Avg Pkg Pwr   : 18.22W
-   ├─ 7z Rating     : 42686 MIPS
-   └─ Efficiency    : 2342.8 MIPS/W
+   ┌─ Start Temp    : 49.8°C
+   ├─ Peak Temp     : 67.6°C
+   ├─ End Temp      : 67.2°C
+   ├─ Peak Pkg Pwr  : 21.24W
+   ├─ Avg Pkg Pwr   : 18.17W
+   ├─ 7z Rating     : 31686 MIPS
+   └─ Efficiency    : 1743.8 MIPS/W
 
-⏳ Cooldown 60s before: Target: 3500MHz
-   End of cooldown — CPU: 40.8°C (was: 62.1°C)
+⏳ Cooldown 60s before: Target: 3550MHz
+   End of cooldown — CPU: 45.9°C (was: 67.2°C)
 
 ============================================================
- TEST: 3500 MHz (Cap)
+ TEST: 3550 MHz (Cap)
 ============================================================
-   Pre-test — CPU: 40.6°C | Freq: 2003 MHz
+   Pre-test — CPU: 46.6°C | Freq: 2515 MHz
    Starting 7zip benchmark (120s)...
 
-   ┌─ Start Temp    : 40.6°C
-   ├─ Peak Temp     : 69.2°C
-   ├─ End Temp      : 66.4°C
-   ├─ Peak Pkg Pwr  : 25.10W
-   ├─ Avg Pkg Pwr   : 21.32W
-   ├─ 7z Rating     : 42701 MIPS
-   └─ Efficiency    : 2002.8 MIPS/W
+   ┌─ Start Temp    : 46.6°C
+   ├─ Peak Temp     : 74.2°C
+   ├─ End Temp      : 73.0°C
+   ├─ Peak Pkg Pwr  : 25.28W
+   ├─ Avg Pkg Pwr   : 22.03W
+   ├─ 7z Rating     : 34456 MIPS
+   └─ Efficiency    : 1564.0 MIPS/W
 
-⏳ Cooldown 60s before: Target: 3750MHz
-   End of cooldown — CPU: 41.0°C (was: 66.5°C)
+⏳ Cooldown 60s before: Target: 3800MHz
+   End of cooldown — CPU: 48.0°C (was: 72.9°C)
 
 ============================================================
- TEST: 3750 MHz (Cap)
+ TEST: 3800 MHz (Cap)
 ============================================================
-   Pre-test — CPU: 47.8°C | Freq: 2786 MHz
+   Pre-test — CPU: 47.6°C | Freq: 2795 MHz
    Starting 7zip benchmark (120s)...
 
-   ┌─ Start Temp    : 47.9°C
-   ├─ Peak Temp     : 80.0°C
-   ├─ End Temp      : 79.0°C
-   ├─ Peak Pkg Pwr  : 31.27W
-   ├─ Avg Pkg Pwr   : 26.96W
-   ├─ 7z Rating     : 45794 MIPS
-   └─ Efficiency    : 1698.5 MIPS/W
+   ┌─ Start Temp    : 47.6°C
+   ├─ Peak Temp     : 85.6°C
+   ├─ End Temp      : 83.6°C
+   ├─ Peak Pkg Pwr  : 32.18W
+   ├─ Avg Pkg Pwr   : 27.38W
+   ├─ 7z Rating     : 34731 MIPS
+   └─ Efficiency    : 1268.4 MIPS/W
 
-⏳ Cooldown 60s before: Target: 4000MHz
-   End of cooldown — CPU: 41.2°C (was: 79.0°C)
+⏳ Cooldown 60s before: Target: 4050MHz
+   End of cooldown — CPU: 48.6°C (was: 83.8°C)
 
 ============================================================
- TEST: 4000 MHz (Cap)
+ TEST: 4050 MHz (Cap)
 ============================================================
-   Pre-test — CPU: 41.0°C | Freq: 2185 MHz
+   Pre-test — CPU: 57.8°C | Freq: 4018 MHz
    Starting 7zip benchmark (120s)...
 
-   ┌─ Start Temp    : 41.0°C
-   ├─ Peak Temp     : 95.9°C
-   ├─ End Temp      : 95.6°C
-   ├─ Peak Pkg Pwr  : 41.64W
-   ├─ Avg Pkg Pwr   : 36.36W
-   ├─ 7z Rating     : 48174 MIPS
-   └─ Efficiency    : 1324.9 MIPS/W
+   ┌─ Start Temp    : 57.9°C
+   ├─ Peak Temp     : 98.0°C
+   ├─ End Temp      : 98.2°C
+   ├─ Peak Pkg Pwr  : 42.74W
+   ├─ Avg Pkg Pwr   : 35.92W
+   ├─ 7z Rating     : 33822 MIPS
+   └─ Efficiency    : 941.5 MIPS/W
 
-⏳ Cooldown 60s before: Target: 4280MHz
-   End of cooldown — CPU: 41.8°C (was: 95.6°C)
+⏳ Cooldown 60s before: Target: 4281MHz
+   End of cooldown — CPU: 51.8°C (was: 98.1°C)
 
 ============================================================
- TEST: 4280 MHz (Full Boost)
+ TEST: 4281 MHz (Full Boost)
 ============================================================
-   Pre-test — CPU: 41.5°C | Freq: 1956 MHz
+   Pre-test — CPU: 51.6°C | Freq: 2702 MHz
    Starting 7zip benchmark (120s)...
 
-   ┌─ Start Temp    : 41.5°C
+   ┌─ Start Temp    : 51.6°C
    ├─ Peak Temp     : 98.2°C
-   ├─ End Temp      : 97.8°C
-   ├─ Peak Pkg Pwr  : 49.00W
-   ├─ Avg Pkg Pwr   : 41.23W
-   ├─ 7z Rating     : 50456 MIPS
-   └─ Efficiency    : 1223.7 MIPS/W
+   ├─ End Temp      : 95.5°C
+   ├─ Peak Pkg Pwr  : 45.92W
+   ├─ Avg Pkg Pwr   : 37.57W
+   ├─ 7z Rating     : 34151 MIPS
+   └─ Efficiency    : 908.9 MIPS/W
 
 ============================================================
  SUMMARY
 ============================================================
  Test                           Start°C   Peak°C    PeakPwr    MIPS       MIPS/W    
  ----                           -------    ------     -------    ----       ------    
- 3300 MHz (No Boost)            40.1°C     65.5°C     20.29W     42686      2342.8    
- 3500 MHz (Cap)                 40.6°C     69.2°C     25.10W     42701      2002.8    
- 3750 MHz (Cap)                 47.9°C     80.0°C     31.27W     45794      1698.5    
- 4000 MHz (Cap)                 41.0°C     95.9°C     41.64W     48174      1324.9    
- 4280 MHz (Full Boost)          41.5°C     98.2°C     49.00W     50456      1223.7    
+ 3300 MHz (No Boost)            49.8°C     67.6°C     21.24W     31686      1743.8    
+ 3550 MHz (Cap)                 46.6°C     74.2°C     25.28W     34456      1564.0    
+ 3800 MHz (Cap)                 47.6°C     85.6°C     32.18W     34731      1268.4    
+ 4050 MHz (Cap)                 57.9°C     98.0°C     42.74W     33822      941.5     
+ 4281 MHz (Full Boost)          51.6°C     98.2°C     45.92W     34151      908.9     
 
 ✅ ALL BENCHMARKS COMPLETED SUCCESSFULLY.
 ============================================================
  Data saved to:
- 📄 Log: /tmp/custom_cpu_bench_results.txt
- 📊 CSV: /tmp/custom_cpu_bench_data.csv
+ 📄 Log: /mnt/core/os-configs/benchmark/results/cpu_bench_results.txt
+ 📊 CSV: /mnt/core/os-configs/benchmark/results/cpu_bench_data.csv
 ============================================================
 
 [Restore] Resetting to original state...

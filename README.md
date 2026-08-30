@@ -62,9 +62,11 @@ os-configs/
 ├── keys/
 ├── init/
 ├── lib/
-│   └── common.sh
+│   ├── common.sh
+│   └── bench_common.sh
 └── benchmark/
     ├── cpu_bench.sh
+    ├── gpu_bench.sh
     └── results/
 ```
 
@@ -75,8 +77,8 @@ os-configs/
   - **system** - Dotfiles associated with the root directory (`/etc`)
 - **keys** - Sensitive information. Never commit these to Git.
 - **init** - Default templates and configurations for first-time setup
-- **lib** - Shared helper libraries (e.g. `common.sh`)
-- **benchmark** - CPU benchmarking suite (`cpu_bench.sh`) and historical telemetry results (`results/`)
+- **lib** - Shared helper libraries (e.g. `common.sh`, `bench_common.sh`)
+- **benchmark** - CPU and GPU benchmarking suites (`cpu_bench.sh`, `gpu_bench.sh`) and historical telemetry results (`results/`)
 
 ℹ️ Note: The framework will use the default directory structure and partition layout across most configurations, especially before cloning the repository. If you prefer custom labels and directory structures, update the commands accordingly.
 
@@ -342,12 +344,12 @@ Alternative flags for the initialization script:
 
 #### 4.3 Customizing Power Profiles for Machine Specs
 
-If you are deploying this framework onto a different machine or updating hardware, customize `user-configs/custom/power-profiles.conf` to match your processor's specific base clocks, boost limits, and thermal characteristics:
+If you are deploying this framework onto a different machine or updating hardware, customize `user-configs/custom/power-profiles.conf` to match your processor and graphics card's specific base clocks, boost limits, and thermal characteristics:
 
 1. **Query Hardware Frequency & Mode Capabilities**:
 
     ```shell
-    # Check hardware clock limits
+    # Check CPU hardware clock limits
     cpupower frequency-info
     cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq
 
@@ -356,12 +358,15 @@ If you are deploying this framework onto a different machine or updating hardwar
 
     # Check supported EPP energy preferences
     cat /sys/devices/system/cpu/cpu0/cpufreq/energy_performance_available_preferences
+
+    # Check GPU clock limits (if NVIDIA GPU present)
+    nvidia-smi --query-gpu=clocks.max.graphics,power.default_limit --format=csv
     ```
 
 2. **Tune `power-profiles.conf` Parameters**:
-    - **Quiet (`QUIET_*`)**: Set frequency to hardware base clock (e.g. `3300MHz`), boost `0`, and EPP `power` for silent running and maximum battery endurance.
-    - **Balanced (`BALANCED_*`)**: Set frequency to base + ~20–30% boost headroom (e.g. `3500MHz`), boost `1`, and EPP `balance_performance` for instant desktop responsiveness.
-    - **Performance (`PERFORMANCE_*`)**: Set frequency to the optimal V/F efficiency sweet spot (e.g. `3750MHz`, identified via `benchmark/cpu_bench.sh`) to prevent thermal throttling under sustained gaming and compilation loads.
+    - **Quiet (`[quiet]`)**: Set CPU to hardware base clock (e.g. `3300MHz`), boost `0`, EPP `power`, and GPU to quiet floor (e.g. `1200MHz`) for silent running, low thermals, and maximum battery endurance.
+    - **Balanced (`[balanced]`)**: Set CPU to base + ~20–30% boost headroom (e.g. `3500MHz`), boost `1`, EPP `balance_performance`, and GPU to optimal sweet spot (e.g. `1650MHz`) for snappy desktop responsiveness with low heat.
+    - **Performance (`[performance]`)**: Set CPU to the optimal V/F efficiency sweet spot (e.g. `3750MHz`, identified via `benchmark/cpu_bench.sh`) and GPU to unconstrained boost (`0`, identified via `benchmark/gpu_bench.sh`) to eliminate thermal throttling and maximize sustained gaming FPS.
 
 ---
 

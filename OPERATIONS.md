@@ -28,6 +28,7 @@ This document provides a quick reference of essential commands for managing the 
   - [6.2 Power Profiles and CPU Scaling](#62-power-profiles-and-cpu-scaling)
   - [6.3 NVIDIA GPU Specific Configuration](#63-nvidia-gpu-specific-configuration)
   - [6.4 CPU Benchmarking and Dynamic Frequency Telemetry](#64-cpu-benchmarking-and-dynamic-frequency-telemetry)
+  - [6.5 GPU CUDA Benchmarking and Dynamic Frequency Telemetry](#65-gpu-cuda-benchmarking-and-dynamic-frequency-telemetry)
 - [7. Firmware](#7-firmware)
   - [7.1 Firmware Management](#71-firmware-management)
 - [8. Package Management](#8-package-management)
@@ -291,9 +292,9 @@ Power profiles are defined declaratively in `user-configs/custom/power-profiles.
 
 | Command / Alias | Sudo Required? | Description |
 | :--- | :--- | :--- |
-| `mode-quiet` | Yes (`sudo`) | Switch to Quiet Profile (`low-power` ACPI, 3300 MHz base clock, boost off, power EPP). |
-| `mode-balanced` | Yes (`sudo`) | Switch to Balanced Profile (`balanced` ACPI, 3500 MHz, boost enabled, balance_performance EPP). |
-| `mode-performance` | Yes (`sudo`) | Switch to Performance Profile (`performance` ACPI, 3750 MHz sweet spot, aggressive fan curve). |
+| `mode-quiet` | Yes (`sudo`) | Switch to Quiet Profile (`low-power` ACPI, 3300 MHz CPU, 1200 MHz GPU cap, boost off, power EPP). |
+| `mode-balanced` | Yes (`sudo`) | Switch to Balanced Profile (`balanced` ACPI, 3500 MHz CPU, 1650 MHz GPU cap, boost enabled, balance_performance EPP). |
+| `mode-performance` | Yes (`sudo`) | Switch to Performance Profile (`performance` ACPI, 3750 MHz CPU, unconstrained GPU boost, aggressive fan curve). |
 | `mode-status` | No | Display detailed multi-aspect status, active values, hardware limits, and available choices. |
 | `power-profile.sh status` | No | Direct CLI command to inspect current power profile status and available hardware options. |
 | `sudo power-profile.sh <quiet\|balanced\|performance>` | Yes | Direct CLI command to switch power profile and display transition details. |
@@ -304,8 +305,8 @@ Power profiles are defined declaratively in `user-configs/custom/power-profiles.
 | Command | Description |
 | :--- | :--- |
 | `sudo nvidia-smi -lgc <min,max>` | Lock NVIDIA GPU clock to a min,max range. |
-| `sudo nvidia-smi -rgc` | Reset NVIDIA GPU clock to default. |
-| `sudo nvidia-smi -pl <watts>` | Set NVIDIA GPU power limit. |
+| `sudo nvidia-smi -rgc` | Reset NVIDIA GPU clock to default unconstrained dynamic boost. |
+| `sudo nvidia-smi -pl <watts>` | Set NVIDIA GPU power limit (if supported by VBIOS). |
 
 #### 6.4 CPU Benchmarking and Dynamic Frequency Telemetry
 
@@ -319,6 +320,20 @@ A dedicated, universal benchmarking and telemetry tool is available at `benchmar
 | `sudo bash /mnt/core/os-configs/benchmark/cpu_bench.sh` | Run full automated benchmark suite (saves to `benchmark/results/cpu_bench_results.txt` and `.csv`). |
 | `sudo bash /mnt/core/os-configs/benchmark/cpu_bench.sh -f <name>` | Run benchmark suite with custom name (saves to `benchmark/results/cpu_<name>_results.txt` and `.csv`). |
 | `cat /mnt/core/os-configs/benchmark/results/cpu_bench_results.txt` | View baseline benchmark summary report and thermal/efficiency table. |
+
+#### 6.5 GPU CUDA Benchmarking and Dynamic Frequency Telemetry
+
+A dedicated, headless CUDA benchmarking and telemetry tool is available at `benchmark/gpu_bench.sh`.
+
+- **Memory & Bus Hierarchy (Stage 1):** Directly measures PCIe Host-to-Device transfer bandwidth (GB/s) and dedicated GDDR6 Device-to-Device VRAM bandwidth (GB/s) using native CUDA Driver API (`libcuda.so.1`).
+- **Dynamic Frequency Stepping (Stage 2):** Automatically detects maximum GPU boost clock at runtime and distributes headroom into 4 proportional increments (`1200MHz`, `1450MHz`, `1650MHz`, `1900MHz`, `2100MHz`) via `nvidia-smi -lgc`.
+- **Metrics Recorded:** Sustained 120-second CUDA FP32 FMA stress testing with 5-second polling of GPU Load %, GPU Temperature (°C), Actual Power Draw (Watts), Graphics Clock (MHz), VRAM Clock (MHz), FP32 Compute (GFLOPS), and Power Efficiency (GFLOPS/Watt).
+
+| Command | Description |
+| :--- | :--- |
+| `sudo bash /mnt/core/os-configs/benchmark/gpu_bench.sh` | Run full automated GPU benchmark suite (saves to `benchmark/results/gpu_bench_results.txt` and `.csv`). |
+| `sudo bash /mnt/core/os-configs/benchmark/gpu_bench.sh -f <name>` | Run GPU benchmark suite with custom name (saves to `benchmark/results/gpu_<name>_results.txt` and `.csv`). |
+| `cat /mnt/core/os-configs/benchmark/results/gpu_bench_results.txt` | View baseline GPU benchmark summary report and thermal/efficiency table. |
 
 ---
 

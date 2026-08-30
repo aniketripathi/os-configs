@@ -1,0 +1,120 @@
+============================================================
+ DYNAMIC GPU CUDA BENCHMARK & TELEMETRY
+ Sunday 30 August 2026 10:19:50 PM IST
+ GPU  : NVIDIA GeForce RTX 3050 Laptop GPU
+ VRAM : 4096 MB GDDR6
+ Host : Linux-PC | Driver: 610.57.04
+ Mode : performance
+------------------------------------------------------------
+ Tests Scheduled: 5 Targets (1200 1450 1650 1900 2100 MHz)
+============================================================
+
+[Stage 1: Memory & PCIe Bus Bandwidth Test]
+ • PCIe Host-to-Device Bandwidth : 6.30 GB/s
+ • Dedicated GDDR6 VRAM Speed     : 171.17 GB/s
+
+⏳ Cooldown 60s before: Target: 1200MHz (Quiet Floor)
+   End of cooldown — GPU: 39°C (was: 39°C)
+
+============================================================
+ TEST: 1200 MHz (Quiet Floor)
+============================================================
+   Pre-test — GPU: 39°C | Clock: 210 MHz
+   Starting CUDA compute benchmark (120s)...
+
+   ┌─ Start Temp    : 39°C
+   ├─ Peak Temp     : 48°C
+   ├─ End Temp      : 48°C
+   ├─ Peak Power    : 19.64W
+   ├─ Avg Power     : 19.42W
+   ├─ FP32 Compute  : 2843.14 GFLOPS
+   └─ Efficiency    : 146.4 GF/W
+
+⏳ Cooldown 60s before: Target: 1450MHz
+   End of cooldown — GPU: 43°C (was: 47°C)
+
+============================================================
+ TEST: 1450 MHz (Cap)
+============================================================
+   Pre-test — GPU: 43°C | Clock: 210 MHz
+   Starting CUDA compute benchmark (120s)...
+
+   ┌─ Start Temp    : 43°C
+   ├─ Peak Temp     : 52°C
+   ├─ End Temp      : 52°C
+   ├─ Peak Power    : 24.51W
+   ├─ Avg Power     : 24.20W
+   ├─ FP32 Compute  : 3429.27 GFLOPS
+   └─ Efficiency    : 141.7 GF/W
+
+⏳ Cooldown 60s before: Target: 1650MHz
+   End of cooldown — GPU: 44°C (was: 51°C)
+
+============================================================
+ TEST: 1650 MHz (Cap)
+============================================================
+   Pre-test — GPU: 44°C | Clock: 210 MHz
+   Starting CUDA compute benchmark (120s)...
+
+   ┌─ Start Temp    : 44°C
+   ├─ Peak Temp     : 56°C
+   ├─ End Temp      : 56°C
+   ├─ Peak Power    : 31.07W
+   ├─ Avg Power     : 30.72W
+   ├─ FP32 Compute  : 3908.17 GFLOPS
+   └─ Efficiency    : 127.2 GF/W
+
+⏳ Cooldown 60s before: Target: 1900MHz
+   End of cooldown — GPU: 45°C (was: 54°C)
+
+============================================================
+ TEST: 1900 MHz (Cap)
+============================================================
+   Pre-test — GPU: 45°C | Clock: 210 MHz
+   Starting CUDA compute benchmark (120s)...
+
+   ┌─ Start Temp    : 45°C
+   ├─ Peak Temp     : 65°C
+   ├─ End Temp      : 65°C
+   ├─ Peak Power    : 48.86W
+   ├─ Avg Power     : 47.59W
+   ├─ FP32 Compute  : 4493.35 GFLOPS
+   └─ Efficiency    : 94.4 GF/W
+
+⏳ Cooldown 60s before: Target: 2100MHz
+   End of cooldown — GPU: 48°C (was: 62°C)
+
+============================================================
+ TEST: 2100 MHz (Full Dynamic Boost)
+============================================================
+   Pre-test — GPU: 47°C | Clock: 210 MHz
+   Starting CUDA compute benchmark (120s)...
+
+   ┌─ Start Temp    : 47°C
+   ├─ Peak Temp     : 71°C
+   ├─ End Temp      : 72°C
+   ├─ Peak Power    : 58.21W
+   ├─ Avg Power     : 57.04W
+   ├─ FP32 Compute  : 4623.45 GFLOPS
+   └─ Efficiency    : 81.0 GF/W
+
+============================================================
+ SUMMARY
+============================================================
+ Test                           Start°C   Peak°C    PeakPwr    FP32 Compute   Efficiency
+ ----                           -------    ------     -------    ------------   ----------
+ 1200 MHz (Quiet Floor)         39°C       48°C       19.64W     2843.14 GF     146.4     
+ 1450 MHz (Cap)                 43°C       52°C       24.51W     3429.27 GF     141.7     
+ 1650 MHz (Cap)                 44°C       56°C       31.07W     3908.17 GF     127.2     
+ 1900 MHz (Cap)                 45°C       65°C       48.86W     4493.35 GF     94.4      
+ 2100 MHz (Full Dynamic Boost)  47°C       71°C       58.21W     4623.45 GF     81.0      
+
+✅ ALL BENCHMARKS COMPLETED SUCCESSFULLY.
+============================================================
+ Data saved to:
+ 📄 Log: /mnt/core/os-configs/benchmark/results/gpu_bench_results.txt
+ 📊 CSV: /mnt/core/os-configs/benchmark/results/gpu_bench_data.csv
+============================================================
+
+[Restore] Resetting GPU to default dynamic clocks (nvidia-smi -rgc)...
+[Restore] ✅ GPU state restored.
