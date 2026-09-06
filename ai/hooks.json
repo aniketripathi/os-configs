@@ -1,0 +1,15 @@
+{
+  "secret-protection": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command|view_file|replace_file_content|grep_search|write_to_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/no-secrets.py"
+          }
+        ]
+      }
+    ]
+  }
+}

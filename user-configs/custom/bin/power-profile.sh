@@ -157,10 +157,9 @@ validate_gpu_freq() {
 
 validate_epp() {
     local epp="$1"
-    local avail
-    avail=$(cat "$CPU_EPP_AVAIL" 2>/dev/null || echo "power balance_power balance_performance performance")
-    if ! [[ " $avail " =~ [[:space:]]${epp}[[:space:]] ]]; then
-        echo "Error: Invalid EPP preference '$epp'. Available choices: $avail" >&2
+    local allowed="default power balance_power balance_performance performance"
+    if ! [[ " $allowed " =~ [[:space:]]${epp}[[:space:]] ]]; then
+        echo "Error: Invalid EPP preference '$epp'. Allowed choices: $allowed" >&2
         return 1
     fi
     return 0
@@ -287,7 +286,10 @@ apply_profile() {
     echo "$target_boost" > "$CPU_BOOST_PATH" 2>/dev/null \
         || echo "Warning: Failed to write boost=$target_boost" >&2
 
-    # 3. Apply CPU Frequency Cap
+    # 3. Apply CPU Governor and Frequency Cap
+    for g in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+        [[ -f "$g" ]] && echo "powersave" > "$g" 2>/dev/null || true
+    done
     if command -v cpupower >/dev/null 2>&1; then
         cpupower frequency-set -u "$target_freq" >/dev/null 2>&1 \
             || echo "Warning: cpupower failed to set $target_freq" >&2

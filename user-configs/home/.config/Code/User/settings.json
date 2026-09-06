@@ -15,4 +15,5 @@
     "files.autoSave": "afterDelay",
     "files.autoSaveDelay": 30000,
     "security.workspace.trust.untrustedFiles": "open",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
 }
